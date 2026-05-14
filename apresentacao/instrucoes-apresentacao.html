@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instruções de Apresentação — Vital Experience</title>
+  <style>
+    /* ── Reset e base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:      #0D0D0D;
+      --gray-light: #F0F0EC;
+      --gray-mid:   #D8D8D4;
+      --gray-text:  #5A5A56;
+      --yellow:     #F5E642;
+      --green:      #1DB954;
+      --pink:       #FF2D7A;
+      --white:      #FFFFFF;
+      --font-main:  'Georgia', serif;
+      --font-sans:  'Arial', 'Helvetica', sans-serif;
+      --font-mono:  'Courier New', monospace;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--gray-light);
+      color: var(--black);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    /* ── Wrapper de impressão ── */
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      background: var(--white);
+      padding: 48px 56px;
+    }
+
+    /* ── Cabeçalho do documento ── */
+    .doc-header {
+      border-bottom: 4px solid var(--yellow);
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .logo-mark {
+      width: 48px; height: 48px;
+      background: var(--black);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-main);
+      font-weight: bold;
+      font-size: 18px;
+      color: var(--yellow);
+      flex-shrink: 0;
+    }
+
+    .logo-text  { font-size: 20px; font-weight: bold; letter-spacing: -0.5px; }
+    .logo-sub   { font-size: 11px; color: var(--gray-text); }
+
+    .doc-title  { font-size: 24px; font-weight: bold; margin: 8px 0 4px; }
+    .doc-meta   { font-size: 11px; color: var(--gray-text); }
+
+    /* ── Seções ── */
+    .section {
+      margin-bottom: 36px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--black);
+      background: var(--yellow);
+      padding: 6px 12px;
+      margin-bottom: 14px;
+      display: inline-block;
+      border-radius: 3px;
+    }
+
+    h3 {
+      font-size: 13px;
+      font-weight: bold;
+      margin: 14px 0 6px;
+      color: var(--black);
+    }
+
+    p { margin-bottom: 8px; }
+
+    /* ── Cartões de integrante ── */
+    .member-card {
+      border: 1.5px solid var(--gray-mid);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .member-header {
+      background: var(--black);
+      color: var(--white);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .member-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold;
+      font-size: 13px;
+      color: var(--black);
+      flex-shrink: 0;
+    }
+
+    .member-name  { font-size: 14px; font-weight: bold; }
+    .member-role  { font-size: 11px; opacity: .7; }
+    .member-time  {
+      margin-left: auto;
+      background: rgba(255,255,255,.15);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .member-body { padding: 14px 16px; }
+
+    .member-body .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--gray-text);
+      font-weight: bold;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+
+    /* ── Listas ── */
+    ul, ol {
+      padding-left: 18px;
+      margin-bottom: 8px;
+    }
+
+    ul li, ol li {
+      margin-bottom: 3px;
+    }
+
+    /* ── Demo steps ── */
+    .step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      min-width: 26px; height: 26px;
+      background: var(--black);
+      color: var(--yellow);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .step-body strong { display: block; margin-bottom: 2px; }
+
+    /* ── Perguntas e respostas ── */
+    .qa-block {
+      border-left: 3px solid var(--yellow);
+      padding: 8px 14px;
+      margin-bottom: 12px;
+      background: #fafaf8;
+    }
+
+    .qa-block .q {
+      font-weight: bold;
+      margin-bottom: 4px;
+      font-size: 12.5px;
+    }
+
+    .qa-block .a {
+      color: #333;
+      font-size: 12.5px;
+    }
+
+    /* ── Checklist ── */
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--gray-mid);
+      font-size: 12.5px;
+    }
+
+    .check-box {
+      width: 16px; height: 16px;
+      border: 2px solid var(--black);
+      border-radius: 3px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Plano B ── */
+    .planb-item {
+      background: #fff5f8;
+      border: 1.5px solid var(--pink);
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+    }
+
+    .planb-item .planb-title {
+      font-weight: bold;
+      color: var(--pink);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    /* ── Ordem da apresentação ── */
+    .order-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .order-item {
+      border: 1.5px solid var(--gray-mid);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    .order-num {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--yellow);
+      background: var(--black);
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      margin-bottom: 4px;
+    }
+
+    .order-label { font-weight: bold; display: block; }
+
+    /* ── Aviso ── */
+    .alert {
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      font-size: 12.5px;
+    }
+
+    .alert-warn  { background: #fffbe6; border: 1.5px solid var(--yellow); }
+    .alert-green { background: #f0faf4; border: 1.5px solid var(--green);  }
+    .alert-pink  { background: #fff5f8; border: 1.5px solid var(--pink);   }
+
+    /* ── Rodapé ── */
+    .doc-footer {
+      border-top: 2px solid var(--gray-mid);
+      margin-top: 40px;
+      padding-top: 14px;
+      font-size: 10px;
+      color: var(--gray-text);
+      text-align: center;
+    }
+
+    /* ── Impressão ── */
+    @media print {
+      body  { background: white; font-size: 11.5px; }
+      .page { padding: 24px 32px; max-width: 100%; box-shadow: none; }
+      .section { page-break-inside: avoid; }
+      .member-card { page-break-inside: avoid; }
+      .planb-item  { page-break-inside: avoid; }
+      a { text-decoration: none; color: inherit; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ═══════════════════════════════════════════════════════════ CABEÇALHO -->
+  <header class="doc-header">
+    <div class="logo-row">
+      <div class="logo-mark">VE</div>
+      <div>
+        <div class="logo-text">Vital Experience</div>
+        <div class="logo-sub">Monitoramento Físico e Sensorial</div>
+      </div>
+    </div>
+    <div class="doc-title">Guia Interno de Apresentação</div>
+    <div class="doc-meta">
+      Documento confidencial da equipe &nbsp;·&nbsp; UniEVANGÉLICA &nbsp;·&nbsp;
+      Engenharia de Software — 5º Período &nbsp;·&nbsp; Projeto Integrador &nbsp;·&nbsp; 2026
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════ 1. OBJETIVO -->
+  <section class="section">
+    <div class="section-title">1. Objetivo deste documento</div>
+    <p>
+      Este guia é de uso <strong>exclusivo da equipe</strong> e serve para organizar a apresentação final do projeto
+      Vital Experience perante a banca avaliadora. Ele define a ordem de fala, o roteiro de cada integrante,
+      o passo a passo da demonstração do sistema, respostas prontas para perguntas prováveis da banca e o plano de
+      contingência para imprevistos técnicos.
+    </p>
+    <p>
+      Leia com antecedência. Cada integrante deve conhecer não só sua parte, mas também o que os demais apresentarão,
+      para que a equipe transmita coesão e domínio completo do projeto.
+    </p>
+    <div class="alert alert-warn">
+      <strong>Importante:</strong> Este documento é interno. Não compartilhe com a banca nem o exiba durante a apresentação.
+      Use-o como preparação prévia.
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ 2. RESUMO RÁPIDO -->
+  <section class="section">
+    <div class="section-title">2. Resumo rápido do projeto</div>
+    <p>
+      O <strong>Vital Experience</strong> é um sistema web de monitoramento físico e sensorial voltado para
+      reabilitação, fisioterapia e esporte adaptado. Ele integra sensores vestíveis — como monitores cardíacos,
+      acelerômetros, oxímetros e eletromiógrafos — com uma plataforma que permite a profissionais de saúde e
+      educação física acompanhar em tempo real o estado físico de seus pacientes e atletas.
+    </p>
+    <p>
+      O sistema oferece cadastro de profissionais, usuários monitorados, dispositivos sensores e sessões de atividade,
+      além de visualização de dados fisiológicos (frequência cardíaca, SpO₂, nível de esforço, fadiga) e geração
+      de relatórios de evolução individualizados.
+    </p>
+
+    <h3>Stack tecnológica</h3>
+    <ul>
+      <li><strong>Frontend:</strong> HTML5 + CSS3 + JavaScript puro — 9 telas completas e responsivas</li>
+      <li><strong>Backend:</strong> Node.js + Express — API REST com autenticação JWT</li>
+      <li><strong>ORM:</strong> Prisma 5 — schema centralizado com migrations versionadas</li>
+      <li><strong>Banco de dados:</strong> Supabase PostgreSQL — cloud, com suporte a pgBouncer</li>
+      <li><strong>Dados simulados:</strong> localStorage (frontend autossuficiente para demonstração)</li>
+    </ul>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ 3. ORDEM -->
+  <section class="section">
+    <div class="section-title">3. Ordem sugerida da apresentação</div>
+    <div class="order-grid">
+      <div class="order-item"><span class="order-num">1</span><span class="order-label">Abertura</span>Apresentação da equipe e contexto</div>
+      <div class="order-item"><span class="order-num">2</span><span class="order-label">Problema identificado</span>Por que o projeto existe</div>
+      <div class="order-item"><span class="order-num">3</span><span class="order-label">Solução proposta</span>O que o Vital Experience resolve</div>
+      <div class="order-item"><span class="order-num">4</span><span class="order-label">Público-alvo</span>Profissionais, pacientes e atletas</div>
+      <div class="order-item"><span class="order-num">5</span><span class="order-label">Requisitos principais</span>Funcionais e não funcionais</div>
+      <div class="order-item"><span class="order-num">6</span><span class="order-label">Demonstração do sistema</span>Frontend ao vivo</div>
+      <div class="order-item"><span class="order-num">7</span><span class="order-label">Arquitetura</span>Backend, rotas, Express</div>
+      <div class="order-item"><span class="order-num">8</span><span class="order-label">Banco de dados</span>Prisma + Supabase + modelagem</div>
+      <div class="order-item"><span class="order-num">9</span><span class="order-label">Segurança e privacidade</span>JWT, bcrypt, LGPD</div>
+      <div class="order-item"><span class="order-num">10</span><span class="order-label">Evolução após avaliação</span>O que mudou desde a entrega 2</div>
+      <div class="order-item"><span class="order-num">11</span><span class="order-label">Conclusão</span>Próximos passos e fechamento</div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════ 4. ROTEIRO POR INTEGRANTE -->
+  <section class="section">
+    <div class="section-title">4. Roteiro por integrante</div>
+
+    <!-- DAVI -->
+    <div class="member-card">
+      <div class="member-header">
+        <div class="member-avatar" style="background:#F5E642">DA</div>
+        <div>
+          <div class="member-name">Davi dos Santos Araújo</div>
+          <div class="member-role">Product Owner — Abertura, Frontend e Demonstração</div>
+        </div>
+        <div class="member-time">⏱ 5–7 min</div>
+      </div>
+      <div class="member-body">
+        <div class="label">Parte da apresentação</div>
+        <p>Abertura, problema identificado, objetivo do Vital Experience, demonstração geral do frontend,
+           identidade visual e navegação entre telas.</p>
+
+        <div class="label">Texto base</div>
+        <p>
+          "Bom dia/boa tarde. Somos a equipe Vital Experience, do curso de Engenharia de Software da UniEVANGÉLICA.
+          Nosso projeto nasce de um problema real: profissionais de fisioterapia e educação física muitas vezes não
+          têm acesso a dados objetivos e em tempo real sobre o estado físico de seus pacientes durante as sessões.
+          Isso compromete o diagnóstico e a tomada de decisão clínica. O Vital Experience é a nossa resposta a esse
+          problema — um sistema que integra sensores vestíveis a uma plataforma web completa, permitindo monitorar
+          frequência cardíaca, oximetria, nível de esforço e risco de fadiga em tempo real."
+        </p>
+
+        <div class="label">Pontos que não pode esquecer</div>
+        <ul>
+          <li>Mencionar os tipos de sensores suportados (monitor cardíaco, acelerômetro, oxímetro, giroscópio, EMG)</li>
+          <li>Mostrar a tela de login antes da demonstração</li>
+          <li>Explicar brevemente a identidade visual (preto, amarelo, verde, rosa) e a proposta de UX</li>
+          <li>Navegar pelo dashboard e mostrar os cards de estatísticas ao vivo</li>
+          <li>Passar o controle suavemente para o Hugo após a demonstração</li>
+        </ul>
+
+        <div class="label">Telas e arquivos para mostrar</div>
+        <ul>
+          <li><code>frontend/index.html</code> — tela de login</li>
+          <li><code>frontend/pages/dashboard.html</code> — visão geral do sistema</li>
+          <li><code>frontend/pages/usuarios.html</code> e <code>profissionais.html</code> — CRUDs</li>
+          <li><code>frontend/css/global.css</code> — identidade visual (opcional, se houver tempo)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- HUGO -->
+    <div class="member-card">
+      <div class="member-header">
+        <div class="member-avatar" style="background:#1DB954">HA</div>
+        <div>
+          <div class="member-name">Hugo Alves da Silva</div>
+          <div class="member-role">Scrum Master — Backend, Rotas e API</div>
+        </div>
+        <div class="member-time">⏱ 4–6 min</div>
+      </div>
+      <div class="member-body">
+        <div class="label">Parte da apresentação</div>
+        <p>Backend Node.js/Express, estrutura das rotas da API REST, autenticação JWT, validação de dados
+           e fallback em memória (localStorage) para demonstração sem banco ativo.</p>
+
+        <div class="label">Texto base</div>
+        <p>
+          "O backend do Vital Experience é construído em Node.js com o framework Express. Organizamos a API
+          em sete grupos de rotas: autenticação, usuários, profissionais, sensores, sessões, dados de sensores
+          e relatórios. Cada rota é protegida por um middleware de autenticação JWT, garantindo que apenas
+          usuários autenticados acessem os recursos. Para validação, todos os controllers verificam os campos
+          obrigatórios antes de qualquer operação no banco. Um ponto importante: o frontend funciona de forma
+          completamente autônoma via localStorage — isso nos dá um fallback confiável se o banco não estiver
+          acessível durante a apresentação."
+        </p>
+
+        <div class="label">Pontos que não pode esquecer</div>
+        <ul>
+          <li>Mostrar a estrutura de pastas: <code>src/routes/</code>, <code>src/controllers/</code>, <code>src/middlewares/</code></li>
+          <li>Explicar que o JWT expira em 7 dias e é verificado em toda requisição protegida</li>
+          <li>Mencionar que o <code>server.js</code> registra todas as rotas e o middleware de erro global</li>
+          <li>Reforçar o fallback: se o banco cair, o frontend continua funcionando com os dados locais</li>
+          <li>Não abrir o arquivo <code>.env</code> na apresentação</li>
+        </ul>
+
+        <div class="label">Arquivos para mostrar</div>
+        <ul>
+          <li><code>backend/server.js</code> — ponto de entrada da API</li>
+          <li><code>backend/src/routes/sessions.js</code> — exemplo de rota protegida</li>
+          <li><code>backend/src/controllers/usersController.js</code> — exemplo de controller com validação</li>
+          <li><code>backend/src/middlewares/auth.js</code> — verificação de JWT</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- JORGE -->
+    <div class="member-card">
+      <div class="member-header">
+        <div class="member-avatar" style="background:#FF2D7A">JH</div>
+        <div>
+          <div class="member-name">Jorge Henrique Hajjar Farah Pereira</div>
+          <div class="member-role">Desenvolvedor / Modelagem — Banco de Dados e Arquitetura</div>
+        </div>
+        <div class="member-time">⏱ 5–7 min</div>
+      </div>
+      <div class="member-body">
+        <div class="label">Parte da apresentação</div>
+        <p>Banco de dados PostgreSQL no Supabase, ORM Prisma, modelagem das tabelas, relacionamentos entre
+           entidades, migrations versionadas, diagrama de arquitetura geral do sistema.</p>
+
+        <div class="label">Texto base</div>
+        <p>
+          "Para o banco de dados, escolhemos o Supabase com PostgreSQL — uma solução cloud robusta, gratuita
+          para projetos acadêmicos e com suporte nativo a connection pooling via pgBouncer. O ORM que gerencia
+          toda a estrutura é o Prisma, que nos permite definir o schema de forma declarativa e gerar migrations
+          automáticas versionadas. O banco possui seis tabelas principais: profissionais, usuários, sensores,
+          sessões, dados dos sensores e relatórios. Os relacionamentos foram desenhados para refletir o fluxo
+          real: um profissional acompanha vários usuários, cada usuário pode ter múltiplos sensores e sessões,
+          e cada sessão acumula leituras de sensor ao longo do tempo."
+        </p>
+
+        <div class="label">Pontos que não pode esquecer</div>
+        <ul>
+          <li>Mostrar o <code>schema.prisma</code> com os 6 modelos e 4 enums</li>
+          <li>Explicar os enums: <code>Status</code>, <code>SessionStatus</code>, <code>FatigueRisk</code>, <code>Gender</code></li>
+          <li>Mencionar o <code>@@map</code> que mapeia os nomes dos modelos para as tabelas do banco</li>
+          <li>Mostrar o <code>seed.js</code> e explicar que os dados fictícios são inseridos via Prisma</li>
+          <li>Mostrar a migration gerada em <code>prisma/migrations/</code> — isso prova versionamento real</li>
+          <li>Se possível, abrir o Prisma Studio para mostrar os dados no banco ao vivo</li>
+        </ul>
+
+        <div class="label">Arquivos e ferramentas para mostrar</div>
+        <ul>
+          <li><code>backend/prisma/schema.prisma</code> — estrutura completa do banco</li>
+          <li><code>backend/prisma/seed.js</code> — população com dados fictícios</li>
+          <li><code>backend/prisma/migrations/</code> — migration versionada</li>
+          <li><code>docs/diagramas.md</code> — DER e diagrama de arquitetura</li>
+          <li>Prisma Studio (<code>npx prisma studio</code>) — visualização visual das tabelas</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- LUÍSA -->
+    <div class="member-card">
+      <div class="member-header">
+        <div class="member-avatar" style="background:#3b82f6;color:white">LM</div>
+        <div>
+          <div class="member-name">Luísa Maria Duarte Souza Bastos</div>
+          <div class="member-role">QA / Documentação — Requisitos, Segurança e Conclusão</div>
+        </div>
+        <div class="member-time">⏱ 4–5 min</div>
+      </div>
+      <div class="member-body">
+        <div class="label">Parte da apresentação</div>
+        <p>Requisitos funcionais e não funcionais, pesquisa com usuários, regras de negócio,
+           segurança e privacidade (LGPD), conclusão e próximos passos do projeto.</p>
+
+        <div class="label">Texto base</div>
+        <p>
+          "Antes de desenvolver qualquer funcionalidade, levantamos os requisitos com base em pesquisa junto
+          a potenciais usuários: fisioterapeutas e educadores físicos que relataram dificuldade em registrar
+          e acessar dados objetivos durante atendimentos. Os requisitos funcionais definem o que o sistema
+          faz — CRUDs completos, monitoramento em tempo real, relatórios por paciente. Os não funcionais
+          definem como ele se comporta — responsividade, segurança dos dados, desempenho. Em relação à
+          segurança, implementamos autenticação JWT, senhas com hash bcrypt, variáveis de ambiente para
+          credenciais sensíveis e uma política alinhada à LGPD, já que o sistema trata dados pessoais e
+          biométricos de pacientes."
+        </p>
+
+        <div class="label">Pontos que não pode esquecer</div>
+        <ul>
+          <li>Citar pelo menos 3 requisitos funcionais e 3 não funcionais de forma objetiva</li>
+          <li>Mencionar que senhas são armazenadas com bcrypt (nunca em texto simples)</li>
+          <li>Explicar que o <code>.env</code> com credenciais reais nunca vai para o GitHub (<code>.gitignore</code>)</li>
+          <li>Referenciar a LGPD: dados biométricos exigem consentimento explícito do paciente</li>
+          <li>Concluir com os próximos passos: integração real frontend-backend, deploy em nuvem, WebSocket para tempo real</li>
+        </ul>
+
+        <div class="label">Arquivos e documentos para mostrar</div>
+        <ul>
+          <li><code>docs/seguranca-privacidade.md</code> — política completa de segurança</li>
+          <li><code>docs/responsabilidades-equipe.md</code> — organização da equipe</li>
+          <li><code>.gitignore</code> — mostrar que <code>.env</code> está listado</li>
+          <li><code>backend/.env.example</code> — mostrar que apenas placeholders vão ao repositório</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ 5. DEMONSTRAÇÃO -->
+  <section class="section">
+    <div class="section-title">5. Demonstração do sistema — passo a passo</div>
+    <div class="alert alert-green">
+      <strong>Dica:</strong> Abra o <code>frontend/index.html</code> no navegador antes de começar.
+      Tenha os dados de acesso prontos: <strong>admin@vitalexperience.com</strong> e qualquer senha com 6+ caracteres.
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Login</strong>
+        Mostre a tela de login. Insira e-mail e senha. Explique que o sistema redireciona automaticamente
+        para o dashboard ao autenticar. Comente a validação de campos e o tratamento de erro para
+        credenciais inválidas.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Dashboard</strong>
+        Apresente os cards de estatísticas (usuários, profissionais, sessões, sensores ativos).
+        Mostre as sessões recentes na tabela, o gráfico de frequência cardíaca e o painel de alertas.
+        Ressalte que todos os dados são carregados automaticamente do localStorage ao entrar.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Cadastro de usuário monitorado</strong>
+        Acesse <em>Usuários</em>. Clique em "+ Novo Usuário". Preencha nome, idade, gênero, condição e
+        profissional responsável. Salve e mostre que o novo registro aparece na tabela com o avatar gerado
+        automaticamente e o profissional vinculado.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Cadastro de profissional</strong>
+        Acesse <em>Profissionais</em>. Mostre a lista com as especialidades coloridas. Cadastre um novo
+        profissional e mostre o contador de pacientes vinculados sendo atualizado.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Cadastro de sensor</strong>
+        Acesse <em>Sensores</em>. Mostre os cards de estatísticas (total, ativos, inativos). Cadastre um novo
+        sensor, associe-o a um usuário e explique os tipos suportados: Monitor Cardíaco, Acelerômetro,
+        Giroscópio, Oxímetro, Eletromiógrafo.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>Sessão de monitoramento</strong>
+        Acesse <em>Sessões</em>. Mostre os filtros de status (Em andamento, Concluída, Agendada).
+        Crie uma nova sessão para um paciente, defina tipo, data/hora e profissional. Mostre que a duração
+        é calculada automaticamente ao informar início e fim.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <strong>Dados simulados dos sensores</strong>
+        Acesse <em>Dados dos Sensores</em>. Mostre o gráfico de barras de frequência cardíaca. Clique em
+        "⚡ Simular Leitura" e observe um novo registro aparecer em tempo real com FC, SpO₂, nível de
+        esforço e risco de fadiga. Mostre o filtro por sessão.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">8</div>
+      <div class="step-body">
+        <strong>Relatórios por paciente</strong>
+        Acesse <em>Relatórios</em>. Selecione um paciente no dropdown. Mostre o histórico de FC com o gráfico,
+        as estatísticas consolidadas (FC média, máxima, total de leituras), a distribuição de esforço e
+        fadiga em barras de progresso, e a tabela de sessões com FC média por sessão.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">9</div>
+      <div class="step-body">
+        <strong>Perfil, segurança e privacidade</strong>
+        Acesse <em>Perfil &amp; Segurança</em>. Mostre a edição de dados do operador, a seção de troca de senha
+        e as informações do sistema (quantidade de registros, versão, armazenamento). Mencione que o botão
+        "Redefinir Dados" recarrega o seed inicial — útil para demonstrações repetidas.
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════ 6. PERGUNTAS DA BANCA -->
+  <section class="section">
+    <div class="section-title">6. Perguntas prováveis da banca</div>
+
+    <div class="qa-block">
+      <div class="q">Por que escolheram esse problema?</div>
+      <div class="a">Identificamos que profissionais de fisioterapia e educação física não possuem ferramentas
+        acessíveis para monitorar objetivamente o estado físico de pacientes durante as sessões. A maioria dos
+        sistemas existentes é cara, fechada ou não integra múltiplos sensores. O Vital Experience propõe uma
+        solução web open-source, modular e adaptável ao contexto brasileiro.</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="q">Como os sensores funcionariam na prática?</div>
+      <div class="a">Na versão atual, os dados são simulados via software para demonstração. Na integração real,
+        os sensores vestíveis enviariam dados via Bluetooth ou Wi-Fi para um gateway (aplicativo mobile ou
+        dispositivo IoT), que faria requisições POST para nossa API REST em <code>/api/sensor-data</code>.
+        O Prisma registraria cada leitura vinculada à sessão ativa do paciente.</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="q">O sistema já coleta dados reais?</div>
+      <div class="a">O frontend opera com dados simulados via localStorage para garantir demonstração autônoma.
+        O backend e o banco Supabase estão configurados e funcionais — o banco possui dados reais inseridos
+        via seed do Prisma. A integração completa frontend–backend é o próximo passo previsto.</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="q">Por que PostgreSQL/Supabase?</div>
+      <div class="a">PostgreSQL é um banco relacional robusto, adequado para dados estruturados com múltiplos
+        relacionamentos como os do nosso domínio. Escolhemos Supabase por ser uma plataforma cloud gratuita
+        para projetos acadêmicos, com suporte a connection pooling via pgBouncer — essencial para ambientes
+        serverless e alta concorrência.</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="q">Por que usar Prisma?</div>
+      <div class="a">Prisma elimina SQL manual propenso a erros, oferece type-safety, migrations versionadas
+        e Prisma Studio para visualização dos dados. O schema declarativo em <code>schema.prisma</code>
+        é a fonte única de verdade da estrutura do banco — qualquer mudança é rastreável no histórico do Git.</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="q">Como garantem a segurança dos dados?</div>
+      <div class="a">Utilizamos JWT para autenticação stateless, bcrypt para hash de senhas, variáveis de
+        ambiente para todas as credenciais sensíveis (nunca no código), e o arquivo <code>.env</code> real
+        está no <code>.gitignore</code> — apenas o <code>.env.example</code> com placeholders vai ao GitHub.
+        Os dados biométricos dos pacientes são tratados conforme os princípios da LGPD.</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="q">Como os profissionais acessam os dados dos usuários?</div>
+      <div class="a">O sistema associa cada usuário monitorado a um profissional responsável. As sessões e
+        leituras de sensores estão vinculadas a essa relação. Na tela de Relatórios, qualquer operador
+        autenticado pode visualizar o histórico completo por paciente — incluindo evolução de FC, esforço
+        e fadiga ao longo das sessões.</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="q">Qual foi a evolução após a segunda entrega?</div>
+      <div class="a">Incorporamos o ORM Prisma com schema completo de 6 modelos e 4 enums, configuramos o
+        Supabase PostgreSQL com connection pooling, implementamos migrations versionadas, criamos seed de
+        dados fictícios realistas, adicionamos documentação técnica completa (API, diagramas, segurança,
+        apresentação) e subimos o projeto ao GitHub com proteção das credenciais.</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="q">O que ainda falta para o projeto ficar completo?</div>
+      <div class="a">Integração real do frontend com o backend (substituir localStorage pela API REST),
+        deploy em nuvem (Railway ou Render para o backend), WebSocket para monitoramento em tempo real,
+        integração com SDKs de sensores físicos e implementação de log de auditoria de acesso.</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="q">Como cada integrante contribuiu?</div>
+      <div class="a">Davi (PO): definição de requisitos, validação de entregas, demonstração do frontend e
+        identidade visual. Hugo (SM): estrutura do backend, rotas, autenticação e facilitação do Scrum.
+        Jorge (Dev): modelagem do banco, Prisma, arquitetura e diagramas. Luísa (QA/Docs): requisitos,
+        regras de negócio, segurança, privacidade e documentação completa.</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="q">O que acontece se o banco não conectar durante a apresentação?</div>
+      <div class="a">O frontend funciona de forma completamente autônoma via localStorage — ele não depende
+        de backend ativo. Todos os CRUDs, gráficos, relatórios e simulação de sensores funcionam sem
+        conexão ao banco. Isso garante que a demonstração visual do sistema nunca seja comprometida.</div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════ 7. CUIDADOS -->
+  <section class="section">
+    <div class="section-title">7. Cuidados na apresentação</div>
+
+    <div class="alert alert-pink">
+      <strong>Nunca mencione</strong> que o projeto foi desenvolvido com auxílio de inteligência artificial.
+      Apresente como o trabalho da equipe — porque é: as decisões, o planejamento, a arquitetura e a
+      validação foram todos conduzidos por vocês.
+    </div>
+
+    <ul>
+      <li><strong>Não leia tudo da tela.</strong> Use os slides ou o sistema como apoio visual, mas fale de memória sobre o que está mostrando.</li>
+      <li><strong>Cada integrante deve dominar sua parte</strong> — e conhecer minimamente as demais, para responder perguntas cruzadas da banca.</li>
+      <li><strong>Mostrar o sistema funcionando primeiro</strong> — a demonstração ao vivo impressiona mais do que qualquer explicação técnica isolada.</li>
+      <li><strong>Não abra o arquivo <code>.env</code></strong> em nenhum momento — ele contém credenciais reais.</li>
+      <li><strong>Não mostre o terminal com logs internos</strong> durante a demonstração, a menos que seja solicitado.</li>
+      <li><strong>Ensaiem a transição entre integrantes</strong> — a troca de foco deve ser natural, sem pausas longas.</li>
+      <li><strong>Deixe o navegador aberto</strong> na tela de login antes de começar. Não perca tempo abrindo arquivos na frente da banca.</li>
+      <li><strong>Testem tudo pelo menos 30 minutos antes</strong> da apresentação, no computador que será usado.</li>
+    </ul>
+  </section>
+
+  <!-- ══════════════════════════════════════════════ 8. CHECKLIST -->
+  <section class="section">
+    <div class="section-title">8. Checklist antes da apresentação</div>
+
+    <div class="checklist-item"><div class="check-box"></div><span><strong>Frontend</strong> abrindo corretamente no navegador (<code>frontend/index.html</code>)</span></div>
+    <div class="checklist-item"><div class="check-box"></div><span><strong>Backend</strong> rodando sem erros (<code>cd backend &amp;&amp; npm run dev</code>)</span></div>
+    <div class="checklist-item"><div class="check-box"></div><span><strong>Banco Supabase</strong> conectado e respondendo (testar via Prisma Studio)</span></div>
+    <div class="checklist-item"><div class="check-box"></div><span><strong>Prisma</strong> configurado (<code>npx prisma generate</code> rodado com sucesso)</span></div>
+    <div class="checklist-item"><div class="check-box"></div><span><strong>Dados fictícios</strong> cadastrados no banco (<code>npx prisma db seed</code> executado)</span></div>
+    <div class="checklist-item"><div class="check-box"></div><span><strong>localStorage</strong> populado com dados de demonstração (abrir o frontend ao menos uma vez)</span></div>
+    <div class="checklist-item"><div class="check-box"></div><span><strong>GitHub</strong> atualizado com a versão mais recente do projeto</span></div>
+    <div class="checklist-item"><div class="check-box"></div><span><strong><code>.env</code> fora do GitHub</strong> — verificar no repositório online que não aparece</span></div>
+    <div class="checklist-item"><div class="check-box"></div><span><strong><code>.env.example</code></strong> presente e com apenas placeholders</span></div>
+    <div class="checklist-item"><div class="check-box"></div><span><strong>Integrantes</strong> sabendo suas falas e a ordem de apresentação</span></div>
+    <div class="checklist-item"><div class="check-box"></div><span><strong>Prisma Studio</strong> testado (<code>npx prisma studio</code>) — opcional, mas impactante</span></div>
+    <div class="checklist-item"><div class="check-box"></div><span><strong>Prints ou backup offline</strong> disponíveis caso a internet falhe</span></div>
+    <div class="checklist-item"><div class="check-box"></div><span><strong>Tempo ensaiado</strong> — apresentação total dentro do limite definido pela banca</span></div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════ 9. PLANO B -->
+  <section class="section">
+    <div class="section-title">9. Plano B — contingências técnicas</div>
+
+    <div class="planb-item">
+      <div class="planb-title">⚠ Backend não roda</div>
+      <p>Use apenas o frontend com localStorage. Todos os CRUDs, gráficos e relatórios funcionam sem backend.
+         Mencione que o backend foi testado e está funcional, e explique a arquitetura de forma verbal.</p>
+    </div>
+
+    <div class="planb-item">
+      <div class="planb-title">⚠ Banco Supabase não conecta</div>
+      <p>O frontend não depende do banco. Mostre o <code>schema.prisma</code>, o arquivo de migration e o
+         <code>seed.js</code> para comprovar a estrutura. Se tiver acesso ao Supabase Dashboard pelo celular,
+         mostre as tabelas pela interface web do Supabase.</p>
+    </div>
+
+    <div class="planb-item">
+      <div class="planb-title">⚠ Internet cai durante a apresentação</div>
+      <p>O frontend funciona 100% offline via localStorage. O Supabase não estará disponível, mas toda a
+         demonstração visual continua normalmente. Tenha prints das telas do banco como backup.</p>
+    </div>
+
+    <div class="planb-item">
+      <div class="planb-title">⚠ GitHub não abre</div>
+      <p>Mostre o repositório local — o código está na máquina. Abra o VS Code com a estrutura de pastas
+         visível na sidebar. Explique verbalmente a organização e navegue pelos arquivos principais.</p>
+    </div>
+
+    <div class="planb-item">
+      <div class="planb-title">⚠ Alguma tela do frontend dá erro</div>
+      <p>Abra o console do navegador (F12) rapidamente para identificar o problema. Se não resolver em
+         30 segundos, recarregue a página. Se persistir, pule para a próxima tela e retorne ao final.
+         O sistema tem 9 telas — a apresentação não depende de uma tela específica.</p>
+    </div>
+
+    <div class="planb-item">
+      <div class="planb-title">⚠ Prisma Studio não abre</div>
+      <p>Use o Supabase Dashboard (supabase.com → seu projeto → Table Editor) para mostrar os dados
+         diretamente na interface web. O visual é igualmente profissional e dispensa o Prisma Studio.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════ 10. CONCLUSÃO -->
+  <section class="section">
+    <div class="section-title">10. Conclusão</div>
+
+    <p>
+      A apresentação final é a oportunidade de mostrar que o Vital Experience é mais do que um protótipo —
+      é um sistema estruturado, seguro, documentado e com potencial real de aplicação clínica.
+    </p>
+
+    <div class="alert alert-green">
+      <strong>A banca avalia:</strong>
+      <ul style="margin-top:6px">
+        <li><strong>Evolução do projeto</strong> — o que avançou desde a entrega anterior</li>
+        <li><strong>Sistema funcional</strong> — algo que possa ser demonstrado ao vivo</li>
+        <li><strong>Organização do código</strong> — estrutura de pastas, separação de responsabilidades</li>
+        <li><strong>Banco de dados estruturado</strong> — schema, relacionamentos e migrations reais</li>
+        <li><strong>Segurança e privacidade</strong> — JWT, bcrypt, LGPD, .gitignore correto</li>
+        <li><strong>Documentação completa</strong> — README, API, diagramas, responsabilidades</li>
+        <li><strong>Alinhamento com a avaliação recebida</strong> — mostrar que o feedback foi incorporado</li>
+      </ul>
+    </div>
+
+    <p>
+      Confiem no trabalho que fizeram. Apresentem com clareza, mostrem o sistema funcionando,
+      expliquem as decisões técnicas com segurança e demonstrem que cada integrante domina o projeto
+      como um todo. Boa apresentação!
+    </p>
+  </section>
+
+  <!-- ══════════════════════════════════════════════ RODAPÉ -->
+  <footer class="doc-footer">
+    Vital Experience &nbsp;·&nbsp; UniEVANGÉLICA &nbsp;·&nbsp; Engenharia de Software — 5º Período &nbsp;·&nbsp; 2026
+    &nbsp;·&nbsp; Documento interno — não compartilhar com a banca
+  </footer>
+
+</div>
+</body>
+</html>
