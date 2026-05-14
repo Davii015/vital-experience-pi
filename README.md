@@ -171,4 +171,5 @@ npm run prisma:studio
 
 ## Repositório
 
-GitHub: [https://github.com/Davii015/vitalexperience3](https://github.com/Davii015/vitalexperience3)
+GitHub: [https://github.com/Davii015/vital-experience-pi](https://github.com/Davii015/vital-experience-pi)
+
