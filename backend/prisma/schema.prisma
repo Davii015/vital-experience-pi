@@ -1,0 +1,161 @@
+// Vital Experience — Prisma Schema
+// Banco: Supabase PostgreSQL
+// ORM: Prisma (fonte principal de estrutura)
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── Enums ─────────────────────────────────────────────────────────────────
+
+enum Status {
+  ATIVO
+  INATIVO
+}
+
+enum SessionStatus {
+  EM_ANDAMENTO
+  FINALIZADA
+  CANCELADA
+}
+
+enum FatigueRisk {
+  BAIXO
+  MODERADO
+  ALTO
+}
+
+enum Gender {
+  MASCULINO
+  FEMININO
+  OUTRO
+  NAO_INFORMADO
+}
+
+// ─── Models ────────────────────────────────────────────────────────────────
+
+model Professional {
+  id                 Int       @id @default(autoincrement())
+  name               String
+  email              String    @unique
+  phone              String?
+  specialty          String?
+  registrationNumber String?
+  status             Status    @default(ATIVO)
+
+  users    User[]
+  sessions Session[]
+  reports  Report[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("professionals")
+}
+
+model User {
+  id                   Int      @id @default(autoincrement())
+  professionalId       Int?
+  name                 String
+  email                String?  @unique
+  phone                String?
+  birthDate            DateTime?
+  gender               Gender?
+  conditionDescription String?
+  status               Status   @default(ATIVO)
+
+  professional Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
+  sensors      Sensor[]
+  sessions     Session[]
+  reports      Report[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Sensor {
+  id           Int      @id @default(autoincrement())
+  userId       Int?
+  name         String
+  type         String
+  serialNumber String?  @unique
+  status       Status   @default(ATIVO)
+  batteryLevel Int?
+  lastSync     DateTime?
+
+  user       User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sensorData SensorData[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sensors")
+}
+
+model Session {
+  id             Int           @id @default(autoincrement())
+  userId         Int
+  professionalId Int?
+  title          String?
+  sessionType    String
+  notes          String?
+  startedAt      DateTime
+  endedAt        DateTime?
+  status         SessionStatus @default(EM_ANDAMENTO)
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  professional Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
+  sensorData   SensorData[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sessions")
+}
+
+model SensorData {
+  id              Int          @id @default(autoincrement())
+  sessionId       Int
+  sensorId        Int?
+  heartRate       Int?
+  movementLevel   Float?
+  effortLevel     String?
+  fatigueRisk     FatigueRisk?
+  bodyTemperature Float?
+  oxygenLevel     Float?
+  steps           Int?
+  recordedAt      DateTime     @default(now())
+
+  session Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sensor  Sensor?  @relation(fields: [sensorId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@map("sensor_data")
+}
+
+model Report {
+  id              Int     @id @default(autoincrement())
+  userId          Int
+  professionalId  Int?
+  title           String
+  summary         String?
+  evolutionStatus String?
+  recommendation  String?
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  professional Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("reports")
+}

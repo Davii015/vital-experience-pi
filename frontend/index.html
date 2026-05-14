@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Vital Experience</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #0D0D0D; --gray-light: #F0F0EC; --yellow: #F5E642;
+      --green: #1DB954; --pink: #FF2D7A; --gray-200: #E4E4E0; --gray-400: #9E9E9A;
+      --font-syne: 'Syne', sans-serif; --font-dm: 'DM Sans', sans-serif; --font-mono: 'DM Mono', monospace;
+    }
+    body { font-family: var(--font-dm); background: var(--gray-light); min-height: 100vh; display: flex; -webkit-font-smoothing: antialiased; }
+
+    /* === LEFT PANEL === */
+    .left-panel {
+      width: 480px;
+      background: var(--black);
+      display: flex;
+      flex-direction: column;
+      padding: 48px 48px 40px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: -60px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(245,230,66,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; right: -80px;
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(255,45,122,0.10) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .login-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo-mark {
+      width: 44px; height: 44px;
+      background: var(--yellow);
+      color: var(--black);
+      font-family: var(--font-syne);
+      font-weight: 800;
+      font-size: 16px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .logo-name {
+      font-family: var(--font-syne);
+      font-weight: 700;
+      font-size: 17px;
+      color: white;
+    }
+
+    .logo-tagline { font-size: 11px; color: var(--gray-400); font-family: var(--font-mono); margin-top: 1px; }
+
+    .left-hero {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 48px;
+    }
+
+    .left-hero h1 {
+      font-family: var(--font-syne);
+      font-size: 36px;
+      font-weight: 800;
+      color: white;
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+
+    .left-hero h1 span { color: var(--yellow); }
+
+    .left-hero p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.6;
+      max-width: 340px;
+    }
+
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .feature-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* === RIGHT PANEL === */
+    .right-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-box h2 {
+      font-family: var(--font-syne);
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--black);
+      margin-bottom: 6px;
+    }
+
+    .login-box .subtitle {
+      font-size: 14px;
+      color: var(--gray-400);
+      margin-bottom: 32px;
+    }
+
+    .form-group { margin-bottom: 18px; }
+
+    label {
+      display: block;
+      font-size: 10.5px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #5A5A58;
+      margin-bottom: 6px;
+    }
+
+    .input-wrap { position: relative; }
+
+    .input-icon {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      color: var(--gray-400);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 11px 13px 11px 40px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 7px;
+      font-size: 14px;
+      font-family: var(--font-dm);
+      color: var(--black);
+      background: white;
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+
+    .form-input:focus {
+      border-color: var(--yellow);
+      box-shadow: 0 0 0 3px rgba(245,230,66,0.18);
+    }
+
+    .form-input::placeholder { color: #C8C8C4; }
+
+    .forgot { font-size: 12.5px; color: var(--gray-400); margin-top: 8px; display: block; cursor: pointer; text-align: right; }
+    .forgot:hover { color: var(--black); }
+
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: var(--yellow);
+      color: var(--black);
+      border: none;
+      border-radius: 7px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: var(--font-syne);
+      cursor: pointer;
+      transition: all 0.18s;
+      margin-top: 8px;
+    }
+
+    .btn-login:hover { background: #e8d93a; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(245,230,66,0.4); }
+    .btn-login:active { transform: translateY(0); }
+
+    .login-error {
+      background: rgba(255,45,122,0.08);
+      border: 1px solid rgba(255,45,122,0.2);
+      color: var(--pink);
+      padding: 10px 14px;
+      border-radius: 7px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .login-footer {
+      margin-top: 40px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 24px;
+      border-top: 1px solid var(--gray-200);
+    }
+
+    .uni-badge {
+      font-size: 11px;
+      color: var(--gray-400);
+      font-family: var(--font-mono);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .left-panel { display: none; }
+      .right-panel { padding: 32px 20px; }
+      body { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="login-logo">
+      <div class="logo-mark">VE</div>
+      <div>
+        <div class="logo-name">Vital Experience</div>
+        <div class="logo-tagline">Monitoramento Físico</div>
+      </div>
+    </div>
+
+    <div class="left-hero">
+      <h1>Monitoramento <span>preciso</span> para reabilitação</h1>
+      <p>Acompanhe o desempenho físico dos seus pacientes com dados de sensores vestíveis em tempo real.</p>
+    </div>
+
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feature-dot" style="background:#F5E642"></div>
+        Dashboard com indicadores em tempo real
+      </div>
+      <div class="feature-item">
+        <div class="feature-dot" style="background:#1DB954"></div>
+        Histórico de frequência cardíaca e esforço
+      </div>
+      <div class="feature-item">
+        <div class="feature-dot" style="background:#FF2D7A"></div>
+        Relatórios de evolução por paciente
+      </div>
+      <div class="feature-item">
+        <div class="feature-dot" style="background:rgba(255,255,255,0.4)"></div>
+        Interface responsiva para qualquer dispositivo
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="login-box">
+      <h2>Entrar no sistema</h2>
+      <p class="subtitle">Use suas credenciais de acesso para continuar</p>
+
+      <div class="login-error" id="loginError"></div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input type="email" id="email" class="form-input" placeholder="seu@email.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" class="form-input" placeholder="Mínimo 6 caracteres" required autocomplete="current-password">
+          </div>
+          <span class="forgot">Esqueci minha senha</span>
+        </div>
+
+        <button type="submit" class="btn-login" id="btnLogin">Entrar</button>
+      </form>
+
+      <div class="login-footer">
+        <span class="uni-badge">UniEVANGÉLICA · Engenharia de Software · 5º Período · 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

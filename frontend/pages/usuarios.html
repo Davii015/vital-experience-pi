@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usuários — Vital Experience</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/global.css">
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">VE</div>
+      <div><div class="logo-text">Vital Experience</div><div class="logo-sub">Monitoramento Físico</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Principal</span>
+      <a href="dashboard.html"     class="nav-item"><span class="nav-icon">▣</span> Dashboard</a>
+      <span class="nav-section-label">Cadastros</span>
+      <a href="usuarios.html"      class="nav-item active"><span class="nav-icon">◎</span> Usuários</a>
+      <a href="profissionais.html" class="nav-item"><span class="nav-icon">◈</span> Profissionais</a>
+      <span class="nav-section-label">Monitoramento</span>
+      <a href="sensores.html"      class="nav-item"><span class="nav-icon">◉</span> Sensores</a>
+      <a href="sessoes.html"       class="nav-item"><span class="nav-icon">▶</span> Sessões</a>
+      <a href="dados-sensores.html"class="nav-item"><span class="nav-icon">▤</span> Dados dos Sensores</a>
+      <span class="nav-section-label">Análise</span>
+      <a href="relatorios.html"    class="nav-item"><span class="nav-icon">▦</span> Relatórios</a>
+      <span class="nav-section-label">Conta</span>
+      <a href="perfil.html"        class="nav-item"><span class="nav-icon">◌</span> Perfil & Segurança</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-avatar-sm" id="sidebarAvatar">AD</div>
+      <div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebarUserName">Admin</div><div class="sidebar-user-role">Sistema</div></div>
+      <button class="btn-logout-sm" onclick="API.auth.logout()" title="Sair">⎋</button>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <main class="main-content">
+    <header class="topbar">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <h1 class="page-title">Usuários Monitorados</h1>
+      <div class="topbar-right">
+        <div class="topbar-user-pill">
+          <div class="topbar-avatar" id="topbarAvatar">AD</div>
+          <span class="topbar-user-name" id="topbarUserName">Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <div class="page-header">
+        <div class="page-header-text">
+          <h2>Usuários Monitorados</h2>
+          <p>Pacientes e praticantes cadastrados no sistema</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary" onclick="openModal()">+ Novo Usuário</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="toolbar" style="margin:0;flex:1">
+            <div class="search-wrap">
+              <span class="search-icon-el">🔍</span>
+              <input type="text" class="search-input" placeholder="Buscar por nome ou condição..." id="searchInput" oninput="renderTable()">
+            </div>
+            <span id="countLabel" style="font-size:12px;color:var(--gray-400);font-family:var(--font-mono);white-space:nowrap"></span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Paciente</th>
+                <th>Idade</th>
+                <th>Gênero</th>
+                <th>Condição</th>
+                <th>Profissional</th>
+                <th>Cadastro</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="modalTitle">Novo Usuário</div>
+          <div class="modal-subtitle">Preencha os dados do paciente</div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="formError" class="alert alert-danger" style="display:none"></div>
+        <div class="form-grid form-grid-2">
+          <div class="form-group span-2">
+            <label>Nome completo *</label>
+            <input type="text" id="fName" class="form-control" placeholder="Ex: Lucas Ferreira">
+          </div>
+          <div class="form-group">
+            <label>Idade *</label>
+            <input type="number" id="fAge" class="form-control" placeholder="Ex: 32" min="1" max="120">
+          </div>
+          <div class="form-group">
+            <label>Gênero</label>
+            <select id="fGender" class="form-control">
+              <option value="Masculino">Masculino</option>
+              <option value="Feminino">Feminino</option>
+              <option value="Outro">Outro</option>
+              <option value="Prefiro não informar">Prefiro não informar</option>
+            </select>
+          </div>
+          <div class="form-group span-2">
+            <label>Condição / Objetivo *</label>
+            <input type="text" id="fCondition" class="form-control" placeholder="Ex: Reabilitação pós-cirurgia">
+          </div>
+          <div class="form-group span-2">
+            <label>Profissional Responsável</label>
+            <select id="fProf" class="form-control">
+              <option value="">Selecione um profissional</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveUser()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRM -->
+  <div class="modal-overlay" id="deleteOverlay">
+    <div class="modal" style="max-width:380px">
+      <div class="modal-header">
+        <div class="modal-title">Remover usuário</div>
+        <button class="modal-close" onclick="closeDelete()">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:14px;color:var(--gray-600)">Tem certeza que deseja remover <strong id="deleteUserName"></strong>? Esta ação não pode ser desfeita.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeDelete()">Cancelar</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">Remover</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/usuarios.js"></script>
+</body>
+</html>

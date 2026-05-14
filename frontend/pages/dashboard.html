@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Vital Experience</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/global.css">
+  <style>
+    .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    .hr-sparkline { display: flex; align-items: flex-end; gap: 3px; height: 48px; margin-top: 10px; }
+    .hr-bar { flex: 1; border-radius: 2px 2px 0 0; background: rgba(255,45,122,0.25); min-width: 6px; transition: background 0.2s; }
+    .hr-bar.peak { background: var(--pink); }
+    .alert-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--gray-200); }
+    .alert-item:last-child { border-bottom: none; }
+    .alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .alert-dot.warning { background: var(--yellow); }
+    .alert-dot.info    { background: #3b82f6; }
+    .alert-dot.success { background: var(--green); }
+    .alert-msg  { font-size: 13px; color: var(--black); font-weight: 500; line-height: 1.4; }
+    .alert-time { font-size: 11px; color: var(--gray-400); font-family: var(--font-mono); margin-top: 2px; }
+    .session-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gray-200); }
+    .session-row:last-child { border-bottom: none; }
+    .session-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-syne); font-weight: 700; font-size: 12px; flex-shrink: 0; }
+    .session-info { flex: 1; min-width: 0; }
+    .session-name { font-size: 13.5px; font-weight: 600; }
+    .session-meta { font-size: 11.5px; color: var(--gray-400); margin-top: 1px; font-family: var(--font-mono); }
+    .quick-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+    .qnav-card { background: var(--white); border: 1.5px solid var(--gray-200); border-radius: var(--r-md); padding: 16px; text-align: center; transition: all 0.18s; cursor: pointer; text-decoration: none; display: block; }
+    .qnav-card:hover { border-color: var(--yellow); background: rgba(245,230,66,0.05); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.07); }
+    .qnav-icon { font-size: 22px; margin-bottom: 6px; display: block; }
+    .qnav-label { font-size: 12px; font-weight: 600; color: var(--black); font-family: var(--font-mono); }
+    @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) { .quick-nav { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">VE</div>
+      <div>
+        <div class="logo-text">Vital Experience</div>
+        <div class="logo-sub">Monitoramento Físico</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Principal</span>
+      <a href="dashboard.html"     class="nav-item active"><span class="nav-icon">▣</span> Dashboard</a>
+      <span class="nav-section-label">Cadastros</span>
+      <a href="usuarios.html"      class="nav-item"><span class="nav-icon">◎</span> Usuários</a>
+      <a href="profissionais.html" class="nav-item"><span class="nav-icon">◈</span> Profissionais</a>
+      <span class="nav-section-label">Monitoramento</span>
+      <a href="sensores.html"      class="nav-item"><span class="nav-icon">◉</span> Sensores</a>
+      <a href="sessoes.html"       class="nav-item"><span class="nav-icon">▶</span> Sessões</a>
+      <a href="dados-sensores.html"class="nav-item"><span class="nav-icon">▤</span> Dados dos Sensores</a>
+      <span class="nav-section-label">Análise</span>
+      <a href="relatorios.html"    class="nav-item"><span class="nav-icon">▦</span> Relatórios</a>
+      <span class="nav-section-label">Conta</span>
+      <a href="perfil.html"        class="nav-item"><span class="nav-icon">◌</span> Perfil & Segurança</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-avatar-sm" id="sidebarAvatar">AD</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Admin</div>
+        <div class="sidebar-user-role">Sistema</div>
+      </div>
+      <button class="btn-logout-sm" onclick="API.auth.logout()" title="Sair">⎋</button>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <header class="topbar">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <h1 class="page-title">Dashboard</h1>
+      <div class="topbar-right">
+        <div class="topbar-badge">
+          <button class="topbar-btn" title="Alertas" onclick="location.href='#alerts-section'">🔔</button>
+          <span class="badge-dot" id="alertDot" style="display:none"></span>
+        </div>
+        <div class="topbar-user-pill">
+          <div class="topbar-avatar" id="topbarAvatar">AD</div>
+          <span class="topbar-user-name" id="topbarUserName">Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <!-- PAGE HEADER -->
+      <div class="page-header">
+        <div class="page-header-text">
+          <h2>Visão Geral</h2>
+          <p id="dashGreeting">Bem-vindo ao sistema de monitoramento</p>
+        </div>
+        <div class="page-header-actions">
+          <a href="sessoes.html" class="btn btn-primary">+ Nova Sessão</a>
+        </div>
+      </div>
+
+      <!-- STAT CARDS -->
+      <div class="stats-grid">
+        <div class="stat-card c-yellow">
+          <span class="stat-icon">👥</span>
+          <span class="stat-label">Usuários Monitorados</span>
+          <span class="stat-value" id="statUsers">—</span>
+          <span class="stat-change">cadastrados no sistema</span>
+        </div>
+        <div class="stat-card c-green">
+          <span class="stat-icon">🩺</span>
+          <span class="stat-label">Profissionais</span>
+          <span class="stat-value" id="statProfs">—</span>
+          <span class="stat-change">fisioterapeutas e educadores</span>
+        </div>
+        <div class="stat-card c-pink">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-label">Sessões Totais</span>
+          <span class="stat-value" id="statSessions">—</span>
+          <span class="stat-change"><span id="statActiveSessions" class="up">0</span> em andamento</span>
+        </div>
+        <div class="stat-card c-black">
+          <span class="stat-icon">📡</span>
+          <span class="stat-label">Sensores Ativos</span>
+          <span class="stat-value" id="statSensors">—</span>
+          <span class="stat-change">dispositivos conectados</span>
+        </div>
+      </div>
+
+      <!-- QUICK NAV -->
+      <div class="quick-nav">
+        <a href="usuarios.html"       class="qnav-card"><span class="qnav-icon">👤</span><span class="qnav-label">Usuários</span></a>
+        <a href="profissionais.html"  class="qnav-card"><span class="qnav-icon">🩺</span><span class="qnav-label">Profissionais</span></a>
+        <a href="sensores.html"       class="qnav-card"><span class="qnav-icon">📡</span><span class="qnav-label">Sensores</span></a>
+        <a href="sessoes.html"        class="qnav-card"><span class="qnav-icon">⏱</span><span class="qnav-label">Sessões</span></a>
+        <a href="dados-sensores.html" class="qnav-card"><span class="qnav-icon">📊</span><span class="qnav-label">Dados</span></a>
+        <a href="relatorios.html"     class="qnav-card"><span class="qnav-icon">📋</span><span class="qnav-label">Relatórios</span></a>
+      </div>
+
+      <!-- MAIN GRID -->
+      <div class="dashboard-grid">
+        <!-- LEFT: sessions + heart rate -->
+        <div style="display:flex;flex-direction:column;gap:20px">
+
+          <!-- Sessions -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Sessões Recentes</div>
+                <div class="card-subtitle">Últimas atividades registradas</div>
+              </div>
+              <a href="sessoes.html" class="btn btn-sm btn-ghost">Ver todas</a>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Paciente</th>
+                      <th>Tipo</th>
+                      <th>Início</th>
+                      <th>Duração</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sessionsTbody">
+                    <tr><td colspan="5"><div class="empty-state"><span class="empty-icon">📋</span><h3>Carregando...</h3></div></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- HR Sparkline -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Frequência Cardíaca — Hoje</div>
+                <div class="card-subtitle">Média das sessões do dia</div>
+              </div>
+              <a href="dados-sensores.html" class="btn btn-sm btn-ghost">Detalhes</a>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px">
+                <span style="font-family:var(--font-syne);font-size:36px;font-weight:800;color:var(--pink)" id="avgHRVal">—</span>
+                <span style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400)">bpm média</span>
+                <span style="margin-left:auto;font-size:12px;color:var(--gray-400);font-family:var(--font-mono)" id="hrRange">—</span>
+              </div>
+              <div class="hr-sparkline" id="hrSparkline">
+                <!-- bars gerados pelo JS -->
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--gray-400);font-family:var(--font-mono)">
+                <span>Mín</span><span>Hoje</span><span>Máx</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: alerts -->
+        <div style="display:flex;flex-direction:column;gap:20px">
+
+          <!-- Alerts -->
+          <div class="card" id="alerts-section">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Alertas</div>
+                <div class="card-subtitle" id="alertCount">Carregando...</div>
+              </div>
+              <button class="btn btn-sm btn-ghost" onclick="markAllAlertsRead()">Marcar lidas</button>
+            </div>
+            <div class="card-body" style="padding:0 20px">
+              <div id="alertsList">
+                <!-- gerado pelo JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Resumo do Sistema</div>
+            </div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                  <span style="font-size:12px;color:var(--gray-600);font-family:var(--font-mono)">Sessões concluídas</span>
+                  <span style="font-size:12px;font-weight:700" id="summDone">—</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill green" id="summDoneBar" style="width:0%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                  <span style="font-size:12px;color:var(--gray-600);font-family:var(--font-mono)">Sensores ativos</span>
+                  <span style="font-size:12px;font-weight:700" id="summSensors">—</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill yellow" id="summSensorsBar" style="width:0%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                  <span style="font-size:12px;color:var(--gray-600);font-family:var(--font-mono)">Dados coletados</span>
+                  <span style="font-size:12px;font-weight:700" id="summData">—</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill pink" id="summDataBar" style="width:100%"></div></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/dashboard.js"></script>
+</body>
+</html>

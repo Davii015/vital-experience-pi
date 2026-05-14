@@ -1,0 +1,13 @@
+node_modules/
+.env
+*.log
+.DS_Store
+Thumbs.db
+dist/
+.cache/
+
+# Prisma
+backend/prisma/migrations/*.sql.bak
+
+# Supabase local
+.supabase/
