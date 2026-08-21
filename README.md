@@ -8,8 +8,8 @@ Sistema web de monitoramento físico e sensorial para reabilitação, fisioterap
 
 ## Equipe
 
-| Nome | Matrícula | Função |
-|---|---|---|
+| Nome | Função |
+|---|---|
 | Davi dos Santos Araújo | Product Owner |
 | Hugo Alves da Silva | Scrum Master |
 | Jorge Henrique Hajjar Farah Pereira | Desenvolvedor / Modelagem |
