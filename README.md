@@ -10,10 +10,10 @@ Sistema web de monitoramento físico e sensorial para reabilitação, fisioterap
 
 | Nome | Matrícula | Função |
 |---|---|---|
-| Davi dos Santos Araújo | 2410285 | Product Owner |
-| Hugo Alves da Silva | 2411476 | Scrum Master |
-| Jorge Henrique Hajjar Farah Pereira | 2412215 | Desenvolvedor / Modelagem |
-| Luísa Maria Duarte Souza Bastos | 2411446 | QA / Documentação |
+| Davi dos Santos Araújo | Product Owner |
+| Hugo Alves da Silva | Scrum Master |
+| Jorge Henrique Hajjar Farah Pereira | Desenvolvedor / Modelagem |
+| Luísa Maria Duarte Souza Bastos | QA / Documentação |
 
 **Orientadores:** Eder José Almeida da Silva (principal), Wosney Ramos de Souza (secundário)
 
