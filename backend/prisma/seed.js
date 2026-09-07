@@ -1,4 +1,5 @@
-const { PrismaClient, FatigueRisk } = require('@prisma/client');
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
@@ -10,6 +11,15 @@ async function main() {
   await prisma.sensor.deleteMany();
   await prisma.user.deleteMany();
   await prisma.professional.deleteMany();
+  await prisma.admin.deleteMany();
+
+  console.log('Inserindo administrador...');
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin';
+  await prisma.admin.create({ data: {
+    name: 'Administrador',
+    email: (process.env.ADMIN_EMAIL || 'admin@vitalexperience.com').toLowerCase(),
+    passwordHash: await bcrypt.hash(adminPassword, 10),
+  }});
 
   // ── Profissionais ────────────────────────────────────────────────────────
   console.log('Inserindo profissionais...');

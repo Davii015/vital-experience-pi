@@ -1,7 +1,7 @@
 # PROGRESSO.md — Vital Experience
 
-**Projeto Integrador — UniEVANGÉLICA — Engenharia de Software — 5º Período**
-**Última atualização:** 14/05/2026
+**Projeto Integrador — UniEVANGÉLICA — Engenharia de Software — 6º Período**
+**Última atualização:** 07/09/2026
 
 ---
 
@@ -16,7 +16,7 @@
 
 ---
 
-## Status Geral: ✅ FASE 2 COMPLETA + ✅ PRISMA CONFIGURADO
+## Status Geral: Fase 01 do 6º período com backend implementado
 
 ---
 
@@ -69,18 +69,18 @@
 5. Execute `npx prisma studio` para visualizar os dados
 
 **Próximos passos:**
-- Migrar controllers para usar `prisma` ao invés de `pg`
-- Configurar `prisma migrate dev` com nome descritivo
-- Conectar frontend ao backend real (remover localStorage como fonte de dados)
+- Aplicar as migrations e o seed no projeto Supabase do grupo
+- Conectar o frontend à API REST e remover o `localStorage` como fonte principal
+- Ampliar a cobertura de testes de services e rotas protegidas
 
 ---
 
-## Checklist — Backend
+## Checklist — Backend do 6º período
 
 - [x] `backend/package.json`
 - [x] `backend/.env.example`
 - [x] `backend/server.js`
-- [x] `backend/src/config/database.js`
+- [x] `backend/src/config/prisma.js`
 - [x] `backend/src/middlewares/auth.js`
 - [x] `backend/src/routes/auth.js`
 - [x] `backend/src/routes/users.js`
@@ -96,6 +96,10 @@
 - [x] `backend/src/controllers/sessionsController.js`
 - [x] `backend/src/controllers/sensorDataController.js`
 - [x] `backend/src/controllers/reportsController.js`
+- [x] `backend/src/services/` — regras de negócio e acesso aos dados com Prisma
+- [x] `backend/src/middlewares/errorHandler.js` — respostas de erro centralizadas
+- [x] `backend/src/utils/validation.js` — validação de campos, datas, enums e intervalos
+- [x] `backend/tests/health.test.js` — teste automatizado de disponibilidade
 
 ---
 
@@ -132,10 +136,13 @@
 - Responsividade completa (desktop, tablet, mobile)
 - Toast notifications, modais de confirmação, estados vazios
 
-### Backend (esqueleto)
+### Backend
 - API REST com Express.js
 - 7 grupos de rotas com autenticação JWT
-- Controllers com queries PostgreSQL parametrizadas
+- Controllers responsáveis pelo fluxo HTTP e services com regras de negócio
+- Prisma Client para persistência no PostgreSQL/Supabase
+- Validação de vínculos entre usuários, profissionais, sensores e sessões
+- Validação de datas, estados e intervalos das leituras
 - Middleware de autenticação JWT
 - Tratamento centralizado de erros
 
@@ -191,3 +198,4 @@ npm run dev
 | 0.3.0 | 14/05/2026 | Sensores, Sessões, Dados dos Sensores |
 | 1.0.0 | 14/05/2026 | Relatórios, Perfil, Backend, Database, Docs — Fase 2 completa |
 | 1.1.0 | 14/05/2026 | Prisma 5.x configurado com Supabase PostgreSQL — schema, seed, client |
+| 2.0.0 | 07/09/2026 | Fase 01 do 6º período — services, regras de negócio, Prisma nos controllers, validações, erros e testes |

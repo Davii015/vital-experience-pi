@@ -22,12 +22,12 @@ O sistema coleta e processa os seguintes dados pessoais dos pacientes:
 
 ### Banco de Dados
 - Credenciais via variáveis de ambiente (`.env`) — nunca no código
-- Consultas parametrizadas (proteção contra SQL Injection)
+- Acesso aos dados pelo Prisma Client, sem concatenação manual de SQL
 - Chaves estrangeiras com `ON DELETE CASCADE` ou `SET NULL`
 
 ### API
 - CORS configurado (restrinja `origin` em produção)
-- Validação de entrada em todos os controllers
+- Validação de entrada nos services, incluindo datas, enums, intervalos e vínculos
 - Middleware de tratamento de erros centralizado
 
 ---

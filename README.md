@@ -2,7 +2,7 @@
 
 Sistema web de monitoramento físico e sensorial para reabilitação, fisioterapia e esporte adaptado.
 
-**Projeto Integrador — UniEVANGÉLICA — Engenharia de Software — 5º Período**
+**Projeto Integrador — UniEVANGÉLICA — Engenharia de Software — 6º Período**
 
 ---
 
@@ -22,8 +22,9 @@ Sistema web de monitoramento físico e sensorial para reabilitação, fisioterap
 ## Stack Tecnológica
 
 - **Frontend:** HTML5 + CSS3 + JavaScript puro
-- **Backend:** Node.js + Express (API REST)
-- **ORM:** Prisma 5.x (fonte principal do banco)
+- **Backend:** Node.js + Express (API REST em rotas, controllers e services)
+- **Autenticação:** JWT + bcryptjs
+- **ORM:** Prisma 5.x (fonte oficial do modelo e do acesso aos dados)
 - **Banco de Dados:** Supabase PostgreSQL
 
 ## Identidade Visual
@@ -43,7 +44,7 @@ Fontes: **Syne** (títulos) · **DM Sans** (corpo) · **DM Mono** (dados)
 ## Estrutura do Projeto
 
 ```
-vital-experience/
+vital-experience-pi/
 ├── frontend/
 │   ├── pages/          # Telas do sistema (dashboard, usuarios, etc.)
 │   ├── css/            # Estilos globais e específicos
@@ -56,11 +57,14 @@ vital-experience/
 │   │   └── seed.js         # Dados fictícios para apresentação
 │   ├── src/
 │   │   ├── config/
-│   │   │   ├── prisma.js   # Instância única do PrismaClient
-│   │   │   └── database.js # Conexão pg legacy (referência)
-│   │   ├── controllers/    # Lógica de negócio por entidade
+│   │   │   └── prisma.js   # Instância única do PrismaClient
+│   │   ├── controllers/    # Adaptação de requisições e respostas HTTP
+│   │   ├── services/       # Regras de negócio e persistência com Prisma
 │   │   ├── routes/         # Endpoints da API REST
-│   │   └── middlewares/    # Autenticação JWT
+│   │   ├── middlewares/    # Autenticação e tratamento central de erros
+│   │   ├── errors/         # Erros de domínio convertidos em respostas HTTP
+│   │   └── utils/          # Validação e funções compartilhadas
+│   ├── tests/              # Testes automatizados do backend
 │   ├── server.js
 │   ├── package.json
 │   └── .env.example
@@ -87,7 +91,7 @@ frontend/index.html
 
 **Login de acesso:** qualquer e-mail + senha com 6 ou mais caracteres.
 
-Os dados são simulados via `localStorage` — não é necessário backend ativo para testar o frontend.
+O frontend ainda mantém dados de demonstração no `localStorage`. A integração HTTP com o backend está prevista para a próxima etapa e não interfere na execução isolada da API.
 
 ---
 
@@ -102,6 +106,14 @@ npm run dev
 ```
 
 API disponível em: `http://localhost:3001`
+
+Validações disponíveis:
+
+```bash
+npm run check
+npm test
+npx prisma validate
+```
 
 ---
 
@@ -151,7 +163,19 @@ npx prisma studio
 npm run prisma:studio
 ```
 
-> **Importante:** o arquivo `database/schema.sql` permanece como documentação de referência. O Prisma é a fonte oficial de estrutura do banco.
+> **Importante:** o arquivo `database/schema.sql` permanece como referência legível. O Prisma e suas migrations são a fonte oficial da estrutura do banco.
+
+## Backend implementado na Fase 01 do 6º período
+
+- autenticação de administradores com senha em hash e emissão de JWT;
+- rotas protegidas para usuários, profissionais, sensores, sessões, leituras e relatórios;
+- controllers enxutos e services responsáveis pelas regras de negócio;
+- validação de campos obrigatórios, intervalos fisiológicos, datas e enums;
+- verificação de vínculos entre usuário, profissional, sessão e sensor;
+- bloqueio de leitura em sessão cancelada e de sensor incompatível com o usuário da sessão;
+- persistência por Prisma Client em PostgreSQL/Supabase;
+- respostas 400, 401, 404 e 409 para falhas conhecidas e tratamento centralizado de erros;
+- teste automatizado do endpoint de saúde e verificação de sintaxe do código.
 
 ---
 

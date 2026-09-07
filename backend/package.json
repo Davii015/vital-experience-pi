@@ -1,7 +1,7 @@
 {
   "name": "vital-experience-api",
-  "version": "1.0.0",
-  "description": "Backend REST API — Vital Experience Fase 2",
+  "version": "2.0.0",
+  "description": "Backend REST API do Vital Experience — 6º período, Fase 01",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,7 +10,9 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:seed": "prisma db seed",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "check": "node scripts/check-syntax.js",
+    "test": "node --test tests/*.test.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -21,8 +23,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2",
-    "pg": "^8.12.0"
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.4",

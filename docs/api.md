@@ -2,106 +2,73 @@
 
 Base URL: `http://localhost:3001/api`
 
-Todas as rotas (exceto `/auth/login`) exigem o header:
-```
+Todas as rotas, exceto `POST /auth/login`, exigem o cabeçalho:
+
+```http
 Authorization: Bearer <token>
 ```
 
----
+Os exemplos usam `camelCase`, mas os campos legados em `snake_case` também são aceitos quando indicado pelos services.
 
-## Auth
+## Autenticação
 
 ### POST /auth/login
-Autentica o administrador.
 
-**Body:**
+Autentica um administrador persistido no banco. A senha é comparada com o hash bcrypt e, quando válida, a API emite um JWT.
+
 ```json
 { "email": "admin@vitalexperience.com", "password": "admin" }
 ```
 
-**Resposta 200:**
-```json
-{ "token": "eyJ...", "user": { "id": 1, "name": "Admin", "email": "..." } }
-```
+## Recursos e endpoints
 
----
+| Recurso | Endpoints | Responsabilidade |
+|---|---|---|
+| Usuários | `GET/POST /users`, `GET/PUT/DELETE /users/:id` | CRUD de usuários monitorados e vínculo com profissional |
+| Profissionais | `GET/POST /professionals`, `GET/PUT/DELETE /professionals/:id` | CRUD e bloqueio de remoção quando há usuários ativos |
+| Sensores | `GET/POST /sensors`, `GET/PUT/DELETE /sensors/:id` | CRUD, estado, bateria e vínculo com usuário |
+| Sessões | `GET/POST /sessions`, `GET/PUT/DELETE /sessions/:id` | Registro e ciclo de vida das sessões |
+| Leituras | `GET/POST /sensor-data`, `GET /sensor-data/session/:sessionId`, `DELETE /sensor-data/:id` | Persistência e consulta de dados fisiológicos |
+| Relatórios | `GET /reports/user/:userId`, `GET /reports/summary` | Consolidação de sessões, leituras e indicadores |
 
-## Users
+## Campos principais
 
-| Método | Rota         | Descrição                  |
-|--------|--------------|----------------------------|
-| GET    | /users       | Lista todos os usuários    |
-| GET    | /users/:id   | Busca usuário por ID       |
-| POST   | /users       | Cria novo usuário          |
-| PUT    | /users/:id   | Atualiza usuário           |
-| DELETE | /users/:id   | Remove usuário             |
+### Usuário monitorado
 
-**Campos (POST/PUT):** `name*`, `age*`, `gender`, `condition*`, `professional_id`
+`name`, `conditionDescription`, `email`, `phone`, `birthDate`, `gender`, `status`, `professionalId`.
 
----
+### Profissional
 
-## Professionals
+`name`, `specialty`, `email`, `phone`, `registrationNumber`, `status`.
 
-| Método | Rota                | Descrição                     |
-|--------|---------------------|-------------------------------|
-| GET    | /professionals      | Lista todos os profissionais  |
-| GET    | /professionals/:id  | Busca por ID                  |
-| POST   | /professionals      | Cria profissional             |
-| PUT    | /professionals/:id  | Atualiza profissional         |
-| DELETE | /professionals/:id  | Remove profissional           |
+### Sensor
 
-**Campos (POST/PUT):** `name*`, `specialty*`, `email*`, `phone`
+`name`, `type`, `serialNumber`, `status`, `batteryLevel`, `lastSync`, `userId`.
 
----
+### Sessão
 
-## Sensors
+`userId`, `professionalId`, `title`, `sessionType`, `notes`, `startedAt`, `endedAt`, `status`.
 
-| Método | Rota         | Descrição              |
-|--------|--------------|------------------------|
-| GET    | /sensors     | Lista todos os sensores|
-| GET    | /sensors/:id | Busca por ID           |
-| POST   | /sensors     | Cadastra sensor        |
-| PUT    | /sensors/:id | Atualiza sensor        |
-| DELETE | /sensors/:id | Remove sensor          |
+### Leitura de sensor
 
-**Campos (POST/PUT):** `type*`, `model*`, `serial_number`, `status`, `user_id`
+`sessionId`, `sensorId`, `heartRate`, `movementLevel`, `effortLevel`, `fatigueRisk`, `bodyTemperature`, `oxygenLevel`, `steps`, `recordedAt`.
 
----
+## Regras validadas pela API
 
-## Sessions
+- e-mails de administradores, profissionais e usuários e números de série são únicos;
+- profissionais e usuários vinculados a novos registros devem existir e estar ativos;
+- uma sessão finalizada exige `endedAt`, que não pode ser anterior a `startedAt`;
+- uma leitura não pode ser registrada em sessão cancelada;
+- quando a leitura informa um sensor, ele deve estar ativo e vinculado ao mesmo usuário da sessão;
+- frequência cardíaca, saturação, temperatura, movimento, bateria e passos são validados por intervalo;
+- estados e classificações usam os enums definidos no Prisma.
 
-| Método | Rota           | Descrição              |
-|--------|----------------|------------------------|
-| GET    | /sessions      | Lista todas as sessões |
-| GET    | /sessions/:id  | Busca por ID           |
-| POST   | /sessions      | Cria sessão            |
-| PUT    | /sessions/:id  | Atualiza sessão        |
-| DELETE | /sessions/:id  | Remove sessão          |
+## Respostas de erro
 
-**Campos (POST/PUT):** `user_id*`, `type*`, `start_time*`, `end_time`, `status`, `notes`
-
----
-
-## Sensor Data
-
-| Método | Rota                           | Descrição                      |
-|--------|--------------------------------|--------------------------------|
-| GET    | /sensor-data                   | Todas as leituras              |
-| GET    | /sensor-data/session/:sessionId| Leituras de uma sessão         |
-| POST   | /sensor-data                   | Registra nova leitura          |
-| DELETE | /sensor-data/:id               | Remove leitura                 |
-
-**Campos (POST):** `session_id*`, `heart_rate`, `movement`, `effort_level`, `sp_o2`, `fatigue_state`
-
----
-
-## Reports
-
-| Método | Rota                    | Descrição                          |
-|--------|-------------------------|------------------------------------|
-| GET    | /reports/user/:userId   | Relatório completo de um paciente  |
-| GET    | /reports/summary        | Resumo geral do sistema            |
-
----
-
-*Campos marcados com `*` são obrigatórios.*
+| Código | Uso |
+|---|---|
+| 400 | Campo ausente, formato inválido ou referência inexistente |
+| 401 | Token ausente, inválido ou credenciais incorretas |
+| 404 | Rota ou registro não encontrado |
+| 409 | Duplicidade, vínculo impeditivo ou conflito de regra de negócio |
+| 500 | Erro inesperado ou configuração obrigatória ausente |

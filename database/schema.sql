@@ -1,78 +1,111 @@
--- =====================================================
--- Vital Experience — Esquema do Banco de Dados
--- PostgreSQL 14+
--- =====================================================
+-- Vital Experience - referência SQL do modelo Prisma
+-- A fonte oficial é backend/prisma/schema.prisma e as migrations em backend/prisma/migrations.
 
-CREATE DATABASE vital_experience;
-\c vital_experience;
+CREATE TYPE "Status" AS ENUM ('ATIVO', 'INATIVO');
+CREATE TYPE "SessionStatus" AS ENUM ('EM_ANDAMENTO', 'FINALIZADA', 'CANCELADA');
+CREATE TYPE "FatigueRisk" AS ENUM ('BAIXO', 'MODERADO', 'ALTO');
+CREATE TYPE "Gender" AS ENUM ('MASCULINO', 'FEMININO', 'OUTRO', 'NAO_INFORMADO');
 
--- Tabela de administradores do sistema
-CREATE TABLE admins (
-  id            SERIAL PRIMARY KEY,
-  name          VARCHAR(120) NOT NULL,
-  email         VARCHAR(255) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  created_at    TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE "admins" (
+  "id" SERIAL PRIMARY KEY,
+  "name" TEXT NOT NULL,
+  "email" TEXT NOT NULL UNIQUE,
+  "passwordHash" TEXT NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
--- Tabela de profissionais (fisioterapeutas, educadores físicos, etc.)
-CREATE TABLE professionals (
-  id         SERIAL PRIMARY KEY,
-  name       VARCHAR(120) NOT NULL,
-  specialty  VARCHAR(100),
-  email      VARCHAR(255) UNIQUE NOT NULL,
-  phone      VARCHAR(30),
-  created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE "professionals" (
+  "id" SERIAL PRIMARY KEY,
+  "name" TEXT NOT NULL,
+  "email" TEXT NOT NULL UNIQUE,
+  "phone" TEXT,
+  "specialty" TEXT,
+  "registrationNumber" TEXT,
+  "status" "Status" NOT NULL DEFAULT 'ATIVO',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
--- Tabela de pacientes/usuários monitorados
-CREATE TABLE users (
-  id              SERIAL PRIMARY KEY,
-  name            VARCHAR(120) NOT NULL,
-  age             SMALLINT NOT NULL CHECK (age > 0 AND age < 130),
-  gender          VARCHAR(30),
-  condition       TEXT,
-  professional_id INTEGER REFERENCES professionals(id) ON DELETE SET NULL,
-  created_at      TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE "users" (
+  "id" SERIAL PRIMARY KEY,
+  "professionalId" INTEGER REFERENCES "professionals"("id") ON DELETE SET NULL ON UPDATE CASCADE,
+  "name" TEXT NOT NULL,
+  "email" TEXT UNIQUE,
+  "phone" TEXT,
+  "birthDate" TIMESTAMP(3),
+  "gender" "Gender",
+  "conditionDescription" TEXT,
+  "status" "Status" NOT NULL DEFAULT 'ATIVO',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
--- Tabela de sensores vestíveis
-CREATE TABLE sensors (
-  id            SERIAL PRIMARY KEY,
-  type          VARCHAR(80)  NOT NULL,
-  model         VARCHAR(120) NOT NULL,
-  serial_number VARCHAR(60),
-  status        VARCHAR(30)  DEFAULT 'Ativo',
-  user_id       INTEGER REFERENCES users(id) ON DELETE SET NULL,
-  created_at    TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE "sensors" (
+  "id" SERIAL PRIMARY KEY,
+  "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE,
+  "name" TEXT NOT NULL,
+  "type" TEXT NOT NULL,
+  "serialNumber" TEXT UNIQUE,
+  "status" "Status" NOT NULL DEFAULT 'ATIVO',
+  "batteryLevel" INTEGER,
+  "lastSync" TIMESTAMP(3),
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
--- Tabela de sessões de monitoramento
-CREATE TABLE sessions (
-  id         SERIAL PRIMARY KEY,
-  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  type       VARCHAR(80) NOT NULL,
-  start_time TIMESTAMPTZ NOT NULL,
-  end_time   TIMESTAMPTZ,
-  status     VARCHAR(30) DEFAULT 'Agendada',
-  notes      TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE "sessions" (
+  "id" SERIAL PRIMARY KEY,
+  "userId" INTEGER NOT NULL REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  "professionalId" INTEGER REFERENCES "professionals"("id") ON DELETE SET NULL ON UPDATE CASCADE,
+  "title" TEXT,
+  "sessionType" TEXT NOT NULL,
+  "notes" TEXT,
+  "startedAt" TIMESTAMP(3) NOT NULL,
+  "endedAt" TIMESTAMP(3),
+  "status" "SessionStatus" NOT NULL DEFAULT 'EM_ANDAMENTO',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
--- Tabela de leituras dos sensores
-CREATE TABLE sensor_data (
-  id           SERIAL PRIMARY KEY,
-  session_id   INTEGER NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-  heart_rate   SMALLINT,
-  movement     NUMERIC(6,3),
-  effort_level VARCHAR(20),
-  sp_o2        NUMERIC(4,1),
-  fatigue_state VARCHAR(20),
-  timestamp    TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE "sensor_data" (
+  "id" SERIAL PRIMARY KEY,
+  "sessionId" INTEGER NOT NULL REFERENCES "sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  "sensorId" INTEGER REFERENCES "sensors"("id") ON DELETE SET NULL ON UPDATE CASCADE,
+  "heartRate" INTEGER,
+  "movementLevel" DOUBLE PRECISION,
+  "effortLevel" TEXT,
+  "fatigueRisk" "FatigueRisk",
+  "bodyTemperature" DOUBLE PRECISION,
+  "oxygenLevel" DOUBLE PRECISION,
+  "steps" INTEGER,
+  "recordedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Índices para performance
-CREATE INDEX idx_sensors_user       ON sensors(user_id);
-CREATE INDEX idx_sessions_user      ON sessions(user_id);
-CREATE INDEX idx_sensor_data_session ON sensor_data(session_id);
-CREATE INDEX idx_sensor_data_ts     ON sensor_data(timestamp);
+CREATE TABLE "reports" (
+  "id" SERIAL PRIMARY KEY,
+  "userId" INTEGER NOT NULL REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  "professionalId" INTEGER REFERENCES "professionals"("id") ON DELETE SET NULL ON UPDATE CASCADE,
+  "title" TEXT NOT NULL,
+  "summary" TEXT,
+  "evolutionStatus" TEXT,
+  "recommendation" TEXT,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL
+);
+
+CREATE INDEX "professionals_status_idx" ON "professionals"("status");
+CREATE INDEX "users_professionalId_idx" ON "users"("professionalId");
+CREATE INDEX "users_status_idx" ON "users"("status");
+CREATE INDEX "sensors_userId_idx" ON "sensors"("userId");
+CREATE INDEX "sensors_status_idx" ON "sensors"("status");
+CREATE INDEX "sessions_userId_idx" ON "sessions"("userId");
+CREATE INDEX "sessions_professionalId_idx" ON "sessions"("professionalId");
+CREATE INDEX "sessions_startedAt_idx" ON "sessions"("startedAt");
+CREATE INDEX "sessions_status_idx" ON "sessions"("status");
+CREATE INDEX "sensor_data_sessionId_idx" ON "sensor_data"("sessionId");
+CREATE INDEX "sensor_data_sensorId_idx" ON "sensor_data"("sensorId");
+CREATE INDEX "sensor_data_recordedAt_idx" ON "sensor_data"("recordedAt");
+CREATE INDEX "reports_userId_idx" ON "reports"("userId");
+CREATE INDEX "reports_professionalId_idx" ON "reports"("professionalId");
