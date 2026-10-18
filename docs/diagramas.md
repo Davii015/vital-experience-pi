@@ -1,67 +1,72 @@
-# Diagramas — Vital Experience
+# Diagramas — Vital Experience, Fase 02
 
-## Arquitetura do sistema
+## Arquitetura implementada
 
-```text
-Frontend HTML CSS JavaScript
-  └─ localStorage para demonstração atual
-  └─ integração HTTP planejada
-            │
-            ▼
-API REST Node.js e Express
-  ├─ routes: endpoints e middleware JWT
-  ├─ controllers: requisições e respostas HTTP
-  ├─ services: regras de negócio e operações Prisma
-  ├─ utils: validação de entradas
-  └─ errorHandler: erros 400, 401, 404, 409 e 500
-            │
-            ▼
-Prisma Client e migrations
-            │
-            ▼
-Supabase PostgreSQL
+```mermaid
+flowchart LR
+  N["Navegador: HTML, CSS e JavaScript"] -->|"/app/ estático; /api JSON via fetch"| E["Servidor Express"]
+  E --> R["Rotas e middleware de autenticação/CSRF"]
+  R --> C["Controllers HTTP"]
+  C --> S["Services: validação e regras de negócio"]
+  S --> P["Prisma Client"]
+  P --> D["PostgreSQL / Supabase configurado pelo ambiente"]
+  R --> H["Tratamento centralizado de erros"]
 ```
+
+O código do navegador fica em `frontend/` e é servido por `backend/server.js` em `/app`. A camada `frontend/js/api.js` converte campos e rótulos da interface para o contrato da API. O Express responde em `/api`, separa rotas, controllers e services, e utiliza o Prisma Client para acesso aos dados. A conexão com PostgreSQL depende das URLs externas; a execução desta fase não incluiu banco de teste.
 
 ## Modelo de dados
 
-```text
-Professional 1 ─── N User
-Professional 1 ─── N Session
-Professional 1 ─── N Report
-User         1 ─── N Sensor
-User         1 ─── N Session
-User         1 ─── N Report
-Session      1 ─── N SensorData
-Sensor       1 ─── N SensorData
-
-Admin: credenciais dos operadores autenticados pela API
+```mermaid
+erDiagram
+  ADMIN {
+    int id PK
+    string email UK
+    string passwordHash
+    int tokenVersion
+  }
+  PROFESSIONAL ||--o{ USER : acompanha
+  PROFESSIONAL ||--o{ SESSION : conduz
+  PROFESSIONAL ||--o{ REPORT : assina
+  USER ||--o{ SENSOR : utiliza
+  USER ||--o{ SESSION : participa
+  USER ||--o{ REPORT : recebe
+  SESSION ||--o{ SENSORDATA : registra
+  SENSOR ||--o{ SENSORDATA : origina
 ```
 
-As chaves estrangeiras obrigatórias usam exclusão em cascata quando o registro dependente perde o sentido, como sessões e leituras de um usuário removido. Relações opcionais usam `SET NULL`, preservando o histórico quando um profissional ou sensor é desvinculado.
+`Professional` e `Sensor` podem estar ausentes em relações opcionais; a configuração de exclusão dessas relações usa `SET NULL` quando aplicável. As migrations Prisma governam o esquema. A coluna `Admin.tokenVersion` foi acrescentada na Fase 02 para invalidar sessões anteriores após a troca de senha.
 
-## Fluxo de autenticação
+## Fluxo do navegador
 
-```text
-POST /api/auth/login
-  ├─ procura o administrador por e-mail no PostgreSQL
-  ├─ compara a senha com o hash bcrypt
-  ├─ rejeita credenciais inválidas com 401
-  └─ emite JWT com prazo configurável
-
-Rota protegida
-  ├─ recebe Authorization Bearer
-  ├─ valida assinatura e expiração
-  └─ encaminha a requisição ao controller
+```mermaid
+sequenceDiagram
+  participant U as Administrador
+  participant F as Frontend /app
+  participant A as API /api
+  participant B as Prisma/PostgreSQL
+  U->>F: Informa e-mail e senha
+  F->>A: POST /auth/login
+  A->>B: Consulta Admin e verifica hash bcrypt
+  A-->>F: Cookie HttpOnly + csrfToken + user
+  F->>A: GET /auth/me (cookie)
+  A->>B: Confere tokenVersion
+  A-->>F: Perfil e csrfToken
+  F->>A: POST /users (cookie + X-CSRF-Token)
+  A->>B: Valida e executa Prisma
+  A-->>F: 201 + usuário criado
+  F->>A: GET /users
+  A-->>F: Lista atualizada
 ```
 
-## Fluxo de uma sessão de monitoramento
+O fluxo HTTP do cliente foi exercitado em teste local com delegates Prisma substituídos por memória. As setas para PostgreSQL representam a implementação prevista pelo código, não uma conexão real verificada neste ambiente.
 
-```text
-1. Selecionar usuário e profissional ativos
-2. Criar sessão com data inicial e tipo
-3. Vincular ou selecionar sensor ativo do usuário
-4. Registrar leituras ligadas à sessão
-5. Validar intervalos fisiológicos e vínculo sensor-usuário
-6. Finalizar a sessão com endedAt posterior a startedAt
-7. Consultar consolidação e relatórios do usuário
-```
+## Fluxo de monitoramento
+
+1. Cadastrar usuário e, opcionalmente, profissional.
+2. Abrir sessão para usuário ativo, informando tipo e início.
+3. Registrar uma leitura sintética manual de demonstração ou enviar leitura válida à API; o serviço verifica sessão e sensor vinculado, se informado.
+4. Finalizar sessão com horário final não anterior ao inicial.
+5. Consultar sessões, leituras e agregações em `/reports/user/:userId`.
+
+Não há comunicação com hardware, WebSocket ou alertas automáticos implementados.

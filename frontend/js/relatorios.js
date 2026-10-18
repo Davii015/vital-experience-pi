@@ -1,12 +1,9 @@
 /* relatorios.js */
-const user = API.auth.requireAuth();
-if (user) setTopbarUser(user);
-
 function populateUserSelect() {
   const sel = document.getElementById('userSelect');
   API.users.getAll().forEach(u => {
     const opt = document.createElement('option');
-    opt.value = u.id; opt.textContent = `${u.name} — ${u.condition}`;
+    opt.value = u.id; opt.textContent = `${u.name} — ${u.condition || 'Sem descrição'}`;
     sel.appendChild(opt);
   });
 }
@@ -23,7 +20,7 @@ function renderBarChart(container, data, colorMap) {
     return `
       <div style="margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:12px">${label}</span>
+          <span style="font-size:12px">${escapeHtml(label)}</span>
           <span style="font-family:var(--font-mono);font-size:11px;color:var(--gray-400)">${count} (${pct}%)</span>
         </div>
         <div style="height:8px;background:var(--gray-200);border-radius:4px;overflow:hidden">
@@ -33,7 +30,7 @@ function renderBarChart(container, data, colorMap) {
   }).join('');
 }
 
-function loadReport() {
+async function loadReport() {
   const uid = parseInt(document.getElementById('userSelect').value) || null;
   if (!uid) {
     document.getElementById('reportEmpty').style.display   = 'block';
@@ -41,10 +38,11 @@ function loadReport() {
     return;
   }
 
-  const report = API.reports.forUser(uid);
-  const u      = API.users.getById(uid);
-  const profs  = API.professionals.getAll();
-  const prof   = profs.find(p => p.id === u.professionalId);
+  let report;
+  try { report = await API.reports.forUser(uid); }
+  catch (error) { showToast(error.message, 'error'); return; }
+  const u = API.users.getById(uid);
+  const prof = API.professionals.getById(u.professionalId);
 
   document.getElementById('reportEmpty').style.display   = 'none';
   document.getElementById('reportContent').style.display = 'block';
@@ -52,7 +50,7 @@ function loadReport() {
   // Cabeçalho
   document.getElementById('repAvatar').textContent = getInitials(u.name);
   document.getElementById('repName').textContent   = u.name;
-  document.getElementById('repMeta').textContent   = `${u.age} anos · ${u.gender} · ${u.condition}`;
+  document.getElementById('repMeta').textContent   = `${u.age === null ? 'Idade não informada' : `${u.age} anos`} · ${u.gender} · ${u.condition}`;
   document.getElementById('repProf').textContent   = prof ? `Profissional: ${prof.name} (${prof.specialty})` : 'Sem profissional atribuído';
 
   // Stats
@@ -62,7 +60,7 @@ function loadReport() {
   document.getElementById('repReadings').textContent      = report.totalReadings;
 
   // Gráfico FC
-  const hrData = report.readings.map(r => r.heartRate || 0);
+  const hrData = report.readings.map(r => r.heartRate).filter(Number.isFinite);
   const repChart = document.getElementById('repHRChart');
   if (hrData.length) {
     const maxHR = Math.max(...hrData) || 1;
@@ -71,7 +69,7 @@ function loadReport() {
       const color = v > 140 ? '#FF2D7A' : v > 120 ? '#F5E642' : '#1DB954';
       return `<div title="${v} bpm" style="flex:1;background:${color};height:${Math.max(pct,4)}%;border-radius:2px 2px 0 0;min-width:4px"></div>`;
     }).join('');
-    const hrs = hrData.filter(Boolean);
+    const hrs = hrData;
     document.getElementById('repHRStats').innerHTML = [
       ['FC Mínima', Math.min(...hrs) + ' bpm', '#1DB954'],
       ['FC Média',  report.avgHeartRate + ' bpm', '#F5E642'],
@@ -93,11 +91,11 @@ function loadReport() {
   renderBarChart(
     document.getElementById('fatigueChart'),
     report.fatigueDistribution,
-    { 'Descansado':'#1DB954','Alerta':'#F5E642','Cansado':'#f97316','Exausto':'#FF2D7A' }
+    { 'Baixo':'#1DB954','Moderado':'#F5E642','Alto':'#FF2D7A' }
   );
 
   // Tabela de sessões
-  const statusColor = { 'Concluída':'#1DB954','Em andamento':'#F5E642','Agendada':'#3b82f6','Cancelada':'#FF2D7A' };
+  const statusColor = { 'Concluída':'#1DB954','Em andamento':'#F5E642','Cancelada':'#FF2D7A' };
   const sensorData  = API.sensorData.getAll();
   document.getElementById('repSessionsTable').innerHTML = report.sessions.map(s => {
     const readings = sensorData.filter(d => d.sessionId === s.id);
@@ -108,14 +106,21 @@ function loadReport() {
     return `
       <tr>
         <td style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400)">#${s.id}</td>
-        <td><span class="badge badge-gray">${s.type}</span></td>
+        <td><span class="badge badge-gray">${escapeHtml(s.type)}</span></td>
         <td style="font-family:var(--font-mono);font-size:12px">${fmtDate(s.startTime)}</td>
         <td style="font-family:var(--font-mono);font-size:12px">${dur}</td>
         <td style="font-family:var(--font-mono);font-size:13px;font-weight:600">${avgHR}${avgHR !== '—' ? ' bpm' : ''}</td>
         <td style="font-family:var(--font-mono);font-size:12px">${readings.length}</td>
-        <td><span class="badge" style="background:${color}22;color:${color}">${s.status}</span></td>
+        <td><span class="badge" style="background:${color}22;color:${color}">${escapeHtml(s.status)}</span></td>
       </tr>`;
   }).join('') || `<tr><td colspan="7"><div class="empty-state" style="padding:24px"><span class="empty-icon" style="font-size:24px">📋</span><h3>Nenhuma sessão</h3></div></td></tr>`;
 }
 
-populateUserSelect();
+async function init() {
+  const user = await API.auth.requireAuth();
+  if (!user) return;
+  setTopbarUser(user);
+  try { await API.load('users', 'professionals', 'sensorData'); populateUserSelect(); }
+  catch (error) { showToast(error.message, 'error'); }
+}
+init();

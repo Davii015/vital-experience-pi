@@ -1,7 +1,4 @@
 /* dados-sensores.js */
-const user = API.auth.requireAuth();
-if (user) setTopbarUser(user);
-
 function loadSessionFilter() {
   const sel = document.getElementById('filterSession');
   const cur = sel.value;
@@ -69,12 +66,12 @@ function renderTable() {
   renderChart();
 
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="empty-icon">📊</span><h3>Nenhuma leitura encontrada</h3><p>Use "Simular Leitura" para gerar dados ou ajuste os filtros.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="empty-icon">📊</span><h3>Nenhuma leitura encontrada</h3><p>Registre uma leitura de demonstração ou ajuste os filtros.</p></div></td></tr>`;
     return;
   }
 
   const effortColors = { 'Baixo':'#1DB954','Moderado':'#F5E642','Alto':'#f97316','Muito Alto':'#FF2D7A' };
-  const fatigueColors = { 'Descansado':'#1DB954','Alerta':'#F5E642','Cansado':'#f97316','Exausto':'#FF2D7A' };
+  const fatigueColors = { 'Baixo':'#1DB954','Moderado':'#F5E642','Alto':'#FF2D7A' };
 
   tbody.innerHTML = [...data].reverse().map(d => {
     const sess  = sessions.find(s => s.id === d.sessionId);
@@ -85,30 +82,38 @@ function renderTable() {
     return `
       <tr>
         <td><span style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400)">#${d.sessionId}</span></td>
-        <td style="font-size:12.5px">${u ? u.name : '<span style="color:var(--gray-400)">—</span>'}</td>
+        <td style="font-size:12.5px">${u ? escapeHtml(u.name) : '<span style="color:var(--gray-400)">—</span>'}</td>
         <td>
           <div style="display:flex;align-items:center;gap:6px">
             <div style="width:8px;height:8px;border-radius:50%;background:${hrColor}"></div>
             <span style="font-family:var(--font-mono);font-weight:600">${d.heartRate||'—'}</span>
           </div>
         </td>
-        <td style="font-family:var(--font-mono);font-size:13px">${d.movement !== undefined ? d.movement.toFixed(2) : '—'}</td>
-        <td><span class="badge" style="background:${efColor}22;color:${efColor}">${d.effortLevel||'—'}</span></td>
-        <td style="font-family:var(--font-mono);font-size:13px">${d.spO2 !== undefined ? d.spO2.toFixed(1) : '—'}</td>
-        <td><span class="badge" style="background:${ftColor}22;color:${ftColor}">${d.fatigueState||'—'}</span></td>
+        <td style="font-family:var(--font-mono);font-size:13px">${Number.isFinite(d.movement) ? d.movement.toFixed(2) : '—'}</td>
+        <td><span class="badge" style="background:${efColor}22;color:${efColor}">${escapeHtml(d.effortLevel||'—')}</span></td>
+        <td style="font-family:var(--font-mono);font-size:13px">${Number.isFinite(d.spO2) ? d.spO2.toFixed(1) : '—'}</td>
+        <td><span class="badge" style="background:${ftColor}22;color:${ftColor}">${escapeHtml(d.fatigueState||'—')}</span></td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--gray-400)">${fmtDateTime(d.timestamp)}</td>
       </tr>`;
   }).join('');
 }
 
-function simulateData() {
-  const sessions = API.sessions.getAll().filter(s => s.status === 'Em andamento' || s.status === 'Concluída');
+async function simulateData() {
+  const sessions = API.sessions.getAll().filter(s => s.status === 'Em andamento');
   if (!sessions.length) { showToast('Nenhuma sessão disponível para simular', 'warning'); return; }
   const s = sessions[Math.floor(Math.random() * sessions.length)];
-  API.sensorData.simulate(s.id);
-  showToast('Leitura simulada adicionada');
-  renderTable();
+  try {
+    await API.sensorData.simulate(s.id);
+    showToast('Leitura de demonstração gravada no banco');
+    renderTable();
+  } catch (error) { showToast(error.message, 'error'); }
 }
 
-loadSessionFilter();
-renderTable();
+async function init() {
+  const user = await API.auth.requireAuth();
+  if (!user) return;
+  setTopbarUser(user);
+  try { await API.load('sensorData', 'sessions', 'users'); loadSessionFilter(); renderTable(); }
+  catch (error) { showToast(error.message, 'error'); }
+}
+init();

@@ -4,6 +4,15 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('O seed de demonstração não pode ser executado em produção');
+  }
+  if (process.env.SEED_RESET_CONFIRM !== 'APAGAR_DADOS_DE_DEMONSTRACAO') {
+    throw new Error('Defina SEED_RESET_CONFIRM=APAGAR_DADOS_DE_DEMONSTRACAO para autorizar a limpeza do banco de desenvolvimento');
+  }
+  if (!process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD.length < 12 || process.env.ADMIN_PASSWORD === 'troque_esta_senha') {
+    throw new Error('Defina uma ADMIN_PASSWORD própria, com pelo menos 12 caracteres, antes de executar o seed');
+  }
   console.log('Limpando dados anteriores...');
   await prisma.sensorData.deleteMany();
   await prisma.report.deleteMany();
@@ -14,11 +23,11 @@ async function main() {
   await prisma.admin.deleteMany();
 
   console.log('Inserindo administrador...');
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin';
+  const adminPassword = process.env.ADMIN_PASSWORD;
   await prisma.admin.create({ data: {
     name: 'Administrador',
     email: (process.env.ADMIN_EMAIL || 'admin@vitalexperience.com').toLowerCase(),
-    passwordHash: await bcrypt.hash(adminPassword, 10),
+    passwordHash: await bcrypt.hash(adminPassword, 12),
   }});
 
   // ── Profissionais ────────────────────────────────────────────────────────

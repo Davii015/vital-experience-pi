@@ -1,0 +1,251 @@
+ATUALIZAÇÕES PARA INSERÇÃO MANUAL NO DOCUMENTO DE ESPECIFICAÇÃO DO PROJETO INTEGRADOR
+Vital Experience — 6º período, Fase 02 — preparado em 18/10/2026
+
+Documento de referência, consultado somente para leitura: Documento de Especificação do Projeto Integrador_Vital Experience_6P_Fase01.docx. Este arquivo TXT não altera o Word. Os textos abaixo descrevem o estado do código local após a implementação da Fase 02 e as verificações executadas. Antes do envio acadêmico, conferir no Word a formatação, a numeração automática, eventuais textos orientadores em vermelho e os dados de autoria/aprovação do grupo.
+
+Como usar: localizar cada título indicado no Word, substituir ou acrescentar somente o trecho designado, reconstruir as tabelas quando necessário e revisar as remissões cruzadas. Não afirmar que houve teste de gravação em Supabase: não havia banco de teste configurado neste ambiente. Os testes HTTP utilizaram substitutos Prisma em memória.
+
+======================================================================
+6.1 — IDENTIFICAÇÃO DA SEÇÃO: 22.1 Frontend
+AÇÃO RECOMENDADA: SUBSTITUIR
+LOCALIZAÇÃO NO WORD: Parte 05 > 22 IMPLEMENTAÇÃO POR CAMADAS DO SISTEMA > 22.1 Frontend; substituir os parágrafos atuais que mencionam localStorage e integração futura, até imediatamente antes de 22.2 Backend.
+JUSTIFICATIVA DA ALTERAÇÃO: A interface deixou de usar localStorage como fonte de dados e passou a consumir a API; a descrição anterior afirma o contrário.
+TEXTO FINAL PARA COPIAR E COLAR:
+
+22.1 Frontend
+
+O frontend do Vital Experience permanece implementado em HTML5, CSS3 e JavaScript, com páginas específicas para autenticação, dashboard, usuários monitorados, profissionais, sensores, sessões, dados de sensores, relatórios e perfil do administrador. Na Fase 02 do 6º período, a principal evolução foi substituir a camada de demonstração baseada em armazenamento local por um cliente HTTP centralizado em frontend/js/api.js. As páginas continuam organizadas em frontend/pages, os comportamentos de cada tela ficam em frontend/js e o servidor Express disponibiliza os arquivos estáticos em /app.
+
+O cliente utiliza fetch e corpos JSON para comunicar-se com os endpoints /api. A URL-base padrão é /api, na mesma origem da interface; a variável opcional window.VE_API_BASE_URL permite apontar para outro endereço quando a implantação justificar essa separação. A camada api.js traduz os nomes de campos e os valores enumerados do backend para os rótulos apresentados na interface. Após operações de criação, atualização ou exclusão, a coleção correspondente é novamente consultada para que a tela reflita a resposta do servidor. Falhas de conexão e respostas HTTP não bem-sucedidas são convertidas em mensagens de erro apresentadas ao operador.
+
+O login da interface envia POST /api/auth/login com e-mail e senha de um administrador cadastrado. A API define um cookie de sessão HttpOnly e devolve um token de proteção contra requisições forjadas, utilizado automaticamente pelo cliente nas operações que modificam dados. Ao carregar uma página protegida, o frontend consulta GET /api/auth/me para verificar a sessão; não armazena o JWT em localStorage. A tela de perfil utiliza GET e PUT /api/auth/me, PUT /api/auth/password e POST /api/auth/logout. A troca de senha exige nova autenticação.
+
+As telas de usuários, profissionais, sensores e sessões consomem os endpoints de consulta e manutenção dos respectivos recursos. O formulário de usuário informa a data de nascimento, enquanto a idade exibida é calculada pela interface. A tela de leituras consulta /api/sensor-data e permite registrar uma leitura sintética de demonstração por POST /api/sensor-data em uma sessão em andamento; esse recurso não equivale à aquisição de dados de um dispositivo físico. O dashboard utiliza /api/reports/summary, além das listagens necessárias aos indicadores e sessões recentes. A tela de relatórios utiliza /api/reports/user/:userId para apresentar a consolidação calculada no backend.
+
+O frontend inclui filtros, estados vazios e atualização das tabelas após as operações suportadas. Dados textuais recebidos da API são escapados antes de sua inserção em trechos HTML dinâmicos. Os alertas automáticos foram identificados como pendência na própria interface, pois ainda não há fonte persistente para esse recurso. A integração foi exercitada por teste HTTP local que executou o cliente api.js, mas o percurso visual completo de todas as telas em navegador real e a persistência em PostgreSQL continuam pendentes de validação em ambiente configurado.
+
+======================================================================
+6.2 — IDENTIFICAÇÃO DA SEÇÃO: 22.2 Backend
+AÇÃO RECOMENDADA: SUBSTITUIR
+LOCALIZAÇÃO NO WORD: Parte 05 > 22.2 Backend; substituir todos os parágrafos existentes até antes de 22.3 Integração entre as camadas.
+JUSTIFICATIVA DA ALTERAÇÃO: O backend passou a atender o navegador integrado, recebeu endpoints de perfil e mecanismos de sessão/CSRF e teve suas evidências de teste ampliadas; as menções exclusivas a Bearer e à integração futura ficaram incorretas.
+TEXTO FINAL PARA COPIAR E COLAR:
+
+22.2 Backend
+
+O backend do Vital Experience é uma API REST em Node.js e Express, estruturada em routes, controllers, services, middlewares, utils, errors e config. O servidor interpreta JSON, publica o frontend estático em /app, atende a API em /api e mantém os endpoints públicos / e /health. Os sete grupos de rotas da API são auth, users, professionals, sensors, sessions, sensor-data e reports. As routes definem método e caminho e aplicam autenticação; os controllers adaptam parâmetros e respostas HTTP; os services concentram validação, regras de negócio e operações de dados; e o middleware de erros padroniza as falhas.
+
+A autenticação consulta o administrador persistido, compara a senha ao hash bcrypt e emite JWT com validade padrão de uma hora. Para o navegador, POST /api/auth/login devolve perfil e token CSRF e define o JWT em cookie HttpOnly, SameSite=Strict e Secure em produção. Em requisições autenticadas por cookie que alterem dados, o middleware exige X-CSRF-Token. Para clientes não navegadores, o login aceita o modo bearer e devolve token para uso em Authorization: Bearer. A cada requisição protegida, o middleware valida assinatura, expiração, papel ADMIN e tokenVersion do administrador no banco. GET /api/auth/me consulta o perfil; PUT /api/auth/me atualiza nome ou e-mail; PUT /api/auth/password verifica a senha atual, exige nova senha de no mínimo 12 caracteres e incrementa tokenVersion, revogando tokens anteriores; POST /api/auth/logout remove o cookie local. O logout isolado não revoga imediatamente um Bearer ainda válido. Existe apenas o papel ADMIN, sem isolamento de dados por profissional ou paciente.
+
+Os endpoints GET e POST /api/users, /api/professionals, /api/sensors e /api/sessions, acompanhados de GET, PUT e DELETE por identificador, implementam as operações de manutenção dessas entidades. GET e POST /api/sensor-data, GET /api/sensor-data/session/:sessionId e DELETE /api/sensor-data/:id permitem registrar e consultar leituras. GET /api/reports/summary devolve totais globais e GET /api/reports/user/:userId consolida sessões, leituras e relatórios existentes do usuário, com média de frequência cardíaca e distribuições de esforço e fadiga. Essa consulta não gera automaticamente um novo registro clínico de Report.
+
+As regras de negócio exigem campos obrigatórios e vínculos válidos; verificam situação ativa de profissionais, usuários e sensores quando aplicável; impedem a remoção de profissional com usuários ativos; exigem horário final coerente para sessão finalizada; rejeitam leitura em sessão cancelada; e conferem se o sensor informado está ativo e pertence ao usuário da sessão. As entradas de frequência cardíaca, movimento, saturação, temperatura, passos, bateria, datas e valores enumerados são validadas nos services. Esforço e risco de fadiga são recebidos como classificação da leitura; o backend ainda não implementa um algoritmo clínico que os derive automaticamente. A interface de demonstração produz uma leitura sintética manual, identificada como tal.
+
+O acesso a dados é implementado por instância compartilhada do Prisma Client, de acordo com o schema e as migrations do repositório. O modelo contém Admin, Professional, User, Sensor, Session, SensorData e Report. Na Fase 02, Admin recebeu tokenVersion, com migração versionada e atualização da referência SQL. O seed de demonstração foi protegido: é proibido em produção, exige confirmação literal para limpar as tabelas e senha própria de pelo menos 12 caracteres. Erros conhecidos retornam, conforme o caso, HTTP 400, 401, 403, 404 ou 409; falhas inesperadas retornam 500 sem detalhes internos ao cliente.
+
+Foram executados geração do Prisma Client, validação do schema e verificação de sintaxe. Dois testes automatizados passaram: disponibilidade de /health e integração HTTP local envolvendo autenticação, cookie, CSRF, CRUD de usuário, sessão, leitura sintética, agregação de relatório, edição de perfil, troca de senha, revogação de token, Bearer e rejeição de valor fisiológico inválido. O teste integrado substitui os delegates Prisma por armazenamento em memória; por isso não comprova a gravação efetiva em PostgreSQL/Supabase. A aplicação das migrations e os testes de persistência real exigem um banco de teste ainda não disponível neste ambiente.
+
+======================================================================
+6.3 — IDENTIFICAÇÃO DA SEÇÃO: 22.3 Integração entre as camadas
+AÇÃO RECOMENDADA: SUBSTITUIR
+LOCALIZAÇÃO NO WORD: Parte 05 > 22.3 Integração entre as camadas; substituir os dois parágrafos atuais sobre integração planejada, antes da seção 23.
+JUSTIFICATIVA DA ALTERAÇÃO: O frontend já envia requisições reais à API, mas a persistência externa não pôde ser validada; ambas as condições precisam aparecer corretamente.
+TEXTO FINAL PARA COPIAR E COLAR:
+
+22.3 Integração entre as camadas
+
+A integração entre interface e backend ocorre por HTTP e JSON. O mesmo servidor Express disponibiliza, por padrão, os arquivos do frontend em /app e os recursos REST em /api, evitando dependência de origens distintas no ambiente local. Cada página consulta /api/auth/me para identificar o administrador; frontend/js/api.js centraliza fetch, credenciais do navegador, serialização dos corpos, leitura das respostas, tratamento de erros e adaptação dos campos exibidos. As operações autenticadas por cookie que alteram dados incluem X-CSRF-Token. Quando a resposta é 401 para uma sessão protegida, o cliente limpa seu estado em memória e encaminha o operador para o login. A troca de senha orienta nova autenticação.
+
+O fluxo de cadastro exemplifica a integração: o administrador autentica-se por POST /api/auth/login; o navegador recebe cookie HttpOnly e token CSRF; a tela envia POST /api/users com JSON, cookie e cabeçalho CSRF; a rota protegida chama controller e usersService; o service valida os dados e usa Prisma Client; a resposta HTTP 201 é recebida pelo cliente, que atualiza a lista por GET /api/users. De modo semelhante, a criação de uma sessão e o envio de uma leitura sintética de demonstração utilizam POST /api/sessions e POST /api/sensor-data. O relatório de usuário é consultado por GET /api/reports/user/:userId e o dashboard obtém totais por GET /api/reports/summary.
+
+O teste automatizado executou o servidor HTTP local e o código real do cliente frontend, comprovando métodos, caminhos, cabeçalhos, corpos JSON, autenticação, proteção CSRF, respostas e atualização do estado para os fluxos citados. Os delegates do Prisma foram substituídos por objetos em memória para permitir o teste sem serviço externo. Assim, há evidência de integração HTTP entre frontend e backend, mas não de persistência real em PostgreSQL/Supabase; esta última deverá ser verificada após configurar um banco de teste, aplicar as migrations e repetir operações de criação, consulta, alteração e exclusão. Também permanecem pendentes a validação visual completa em navegador real, o uso de sensores físicos, os alertas automáticos e a autorização por profissional ou paciente.
+
+======================================================================
+6.4 — IDENTIFICAÇÃO DA SEÇÃO: 20 ARQUITETURA GERAL DO SISTEMA
+AÇÃO RECOMENDADA: SUBSTITUIR
+LOCALIZAÇÃO NO WORD: Parte 05 > seção 20; substituir os parágrafos atuais que indicam localStorage e integração futura. Na tabela de três colunas “Camada | Responsabilidade | Implementação” desta seção, substituir as linhas pelo quadro abaixo. Se houver figura com localStorage, substituí-la pelo diagrama Mermaid proposto.
+JUSTIFICATIVA DA ALTERAÇÃO: A arquitetura externa foi preservada, mas a ligação interface–API e a autenticação mudaram; a tabela e eventual figura precisam representar o código atual.
+TEXTO FINAL PARA COPIAR E COLAR:
+
+20 ARQUITETURA GERAL DO SISTEMA
+
+O Vital Experience mantém a separação entre interface web, API REST e persistência relacional. A interface HTML5/CSS3/JavaScript é servida pelo Express em /app e chama /api por meio de frontend/js/api.js. O backend está organizado em routes e middlewares, controllers, services e acesso a dados com Prisma Client. As routes definem o contrato HTTP e a proteção de acesso; os controllers concentram a adaptação da requisição e da resposta; os services aplicam regras de negócio e executam consultas; o Prisma mapeia as sete entidades e suas relações para PostgreSQL. As URLs do banco são fornecidas pelo ambiente, sem credenciais no repositório.
+
+O fluxo principal é: administrador no navegador → cliente HTTP do frontend → rota Express protegida por autenticação e, quando aplicável, CSRF → controller → service → Prisma Client → PostgreSQL. A resposta retorna em JSON e é convertida para os rótulos e estados das telas. O uso da mesma origem para frontend e API simplifica a sessão por cookie. Existe suporte opcional a uma origem de frontend explicitamente configurada para CORS, mas a política de cookies entre origens distintas requer avaliação própria na implantação. Os serviços de autenticação consultam Admin e tokenVersion a cada requisição protegida. O tratamento de erros HTTP é centralizado.
+
+O esquema Prisma e suas migrations são a fonte de referência da estrutura persistente. O arquivo database/schema.sql é uma referência legível alinhada ao esquema; não substitui as migrations. A arquitetura está implementada no código, mas a conexão a um PostgreSQL/Supabase real não foi testada nesta execução. Não fazem parte da arquitetura atual sensores físicos conectados, WebSocket, processamento em tempo real contínuo ou motor persistente de alertas.
+
+Tabela para reconstrução no Word (Camada | Responsabilidade | Implementação):
+Interface | Interação, formulários, visualização e adaptação dos dados | frontend/index.html, frontend/pages, frontend/css e frontend/js/api.js com fetch para /api
+Rotas e middlewares | Métodos HTTP, autenticação JWT por cookie/Bearer, proteção CSRF e encaminhamento | backend/src/routes e backend/src/middlewares
+Controllers | Parâmetros, códigos e corpos das respostas | backend/src/controllers
+Services | Validação, vínculos, estados, regras de negócio e consultas agregadas | backend/src/services e backend/src/utils
+Persistência | Modelo relacional, migrations e consultas | backend/prisma/schema.prisma, migrations, Prisma Client e PostgreSQL configurado externamente
+
+Identificação do diagrama atual: representação da arquitetura da seção 20, caso ainda apresente localStorage ou HTTP apenas planejado.
+Motivo da substituição: localStorage deixou de ser a fonte das telas e a comunicação HTTP foi implementada.
+Código Mermaid completo do diagrama substituto (inserir após a descrição da seção 20, convertendo-o em imagem se o Word não renderizar Mermaid):
+
+flowchart LR
+  N["Navegador: HTML, CSS e JavaScript"] -->|"/app/ e /api via fetch"| E["Express"]
+  E --> R["Rotas + autenticação e CSRF"]
+  R --> C["Controllers"]
+  C --> S["Services e validações"]
+  S --> P["Prisma Client"]
+  P --> D["PostgreSQL configurado no ambiente"]
+  R --> H["Tratamento central de erros"]
+
+O diagrama representa componentes existentes e a ligação prevista no código. O banco é externo e não foi conectado durante os testes desta entrega.
+
+======================================================================
+6.5 — IDENTIFICAÇÃO DA SEÇÃO: 21 TECNOLOGIAS E FERRAMENTAS DO PROJETO
+AÇÃO RECOMENDADA: SUBSTITUIR
+LOCALIZAÇÃO NO WORD: Parte 05 > seção 21; substituir os parágrafos que citam localStorage e a tabela “Tecnologia | Tipo | Uso no projeto”. Preservar os marcadores históricos “Criação obrigatória” e “Atualização” caso sejam parte fixa do modelo institucional.
+JUSTIFICATIVA DA ALTERAÇÃO: A tecnologia frontend não mudou, mas seu modo de integração mudou; a tabela deve mencionar fetch, cookie/CSRF e OpenAPI, sem declarar adotadas tecnologias apenas cogitadas.
+TEXTO FINAL PARA COPIAR E COLAR:
+
+21 TECNOLOGIAS E FERRAMENTAS DO PROJETO
+
+As tecnologias efetivamente presentes no repositório mantêm a base JavaScript do projeto. HTML5 e CSS3 estruturam e estilizam a interface; JavaScript implementa tanto os scripts das telas quanto o backend. O navegador utiliza a API nativa fetch para enviar requisições JSON. O ambiente Node.js executa o servidor Express 4 e o test runner nativo node:test. bcryptjs protege as senhas dos administradores; jsonwebtoken assina e valida JWT; o cookie HttpOnly e o cabeçalho X-CSRF-Token protegem o fluxo do navegador. cors permite restringir origens explícitas quando o frontend não está na mesma origem; dotenv carrega configurações locais.
+
+O Prisma 5.22, com schema, migrations e Prisma Client, representa as entidades e o acesso programado ao PostgreSQL. O projeto prevê PostgreSQL hospedado no Supabase, mas a disponibilidade e a gravação efetiva no serviço não foram verificadas nesta execução. npm gerencia dependências e scripts; Git e GitHub registram o código; a especificação docs/openapi.yaml documenta os caminhos e métodos da API em OpenAPI 3.0.3. Não foram adicionados frameworks de frontend, WebSocket, broker de mensagens ou API externa de sensores. localStorage não é mais a fonte de dados do frontend.
+
+Tabela para reconstrução no Word (Tecnologia | Tipo | Uso no projeto):
+HTML5 | Interface | Estrutura das páginas e formulários.
+CSS3 | Interface | Layout, identidade visual e responsividade.
+JavaScript e fetch | Linguagem/integração | Scripts de interface, cliente HTTP e código do backend.
+Node.js | Runtime | Execução da API e dos testes automatizados.
+Express 4 | Framework backend | Rotas, middlewares, arquivos estáticos e respostas HTTP.
+jsonwebtoken/JWT | Autenticação | Assinatura e validação de sessão com expiração.
+bcryptjs | Segurança | Hash e verificação de senhas dos administradores.
+Cookie HttpOnly e CSRF | Segurança web | Sessão do navegador e proteção de mutações autenticadas por cookie.
+cors | Integração | Restrições de origem quando frontend e backend são separados.
+Prisma 5.22 | ORM | Schema, migrations, seed e acesso programado aos dados.
+PostgreSQL/Supabase | Banco previsto | Persistência relacional dependente da configuração e validação externa.
+dotenv | Configuração | Leitura local de variáveis de ambiente.
+npm e node:test | Qualidade | Dependências, scripts e testes automatizados.
+OpenAPI 3.0.3 | Documentação técnica | Especificação dos endpoints em docs/openapi.yaml.
+Git e GitHub | Versionamento | Histórico e disponibilização do repositório.
+
+Tecnologias não adotadas nesta fase: WebSocket, integração de hardware, provedor externo de autenticação e framework de interface. Essas possibilidades não devem ser apresentadas como componentes implementados.
+
+======================================================================
+6.6 — IDENTIFICAÇÃO DA SEÇÃO: PARTE 02 – PLANEJAMENTO DO SEMESTRE
+AÇÃO RECOMENDADA: SUBSTITUIR
+LOCALIZAÇÃO NO WORD: substituir os textos dos itens 5 SITUAÇÃO ATUAL DO PROJETO, 6 OBJETIVOS DO SEMESTRE e 7 CRONOGRAMA DO SEMESTRE, inclusive a tabela “Etapa | Atividade | Situação e resultado”.
+JUSTIFICATIVA DA ALTERAÇÃO: O planejamento atual termina na Fase 01 e classifica a integração HTTP como futura, enquanto o código da Fase 02 já foi produzido; o cronograma deve separar avanço técnico e validações ainda pendentes.
+TEXTO FINAL PARA COPIAR E COLAR:
+
+PARTE 02 – PLANEJAMENTO DO SEMESTRE
+
+5 SITUAÇÃO ATUAL DO PROJETO
+
+O Vital Experience encontra-se na Fase 02 do 6º período. A Fase 01 consolidou a organização do backend em rotas, controllers, services, middlewares e Prisma Client. Nesta etapa, a interface deixou de depender de dados de demonstração em localStorage e passou a consumir endpoints REST reais para autenticação, cadastros, sessões, leituras e consultas agregadas. O servidor Express publica a interface em /app e atende /api na mesma origem. A autenticação do navegador usa JWT em cookie HttpOnly e proteção CSRF; clientes de API também podem usar Bearer.
+
+O código inclui manutenção de usuários monitorados, profissionais, sensores e sessões; registro de leituras; consolidação para dashboard e relatórios; e consulta, edição e proteção do perfil do administrador. O frontend identifica explicitamente a leitura sintética como demonstração e informa que alertas automáticos ainda não têm fonte persistente. O banco é modelado em Prisma para PostgreSQL/Supabase, com migrations versionadas; a Fase 02 acrescentou tokenVersion ao administrador para invalidar sessões antigas após troca de senha.
+
+A verificação local compreendeu geração do Prisma Client, validação do schema, checagem de sintaxe e dois testes automatizados aprovados. O teste integrado executou o servidor HTTP e o cliente api.js, cobrindo autenticação, proteção CSRF, cadastro de usuário, sessão, leitura de demonstração, consulta agregada, perfil, troca de senha e Bearer. Nele, o Prisma foi substituído por memória. Portanto, a integração HTTP está comprovada nos fluxos testados, mas a persistência em PostgreSQL/Supabase, a navegação visual completa e a implantação ainda não foram verificadas. Não havia banco de teste disponível nesta execução; o seed destrutivo não foi utilizado.
+
+6 OBJETIVOS DO SEMESTRE
+
+Os objetivos do semestre são evoluir o núcleo backend da Fase 01 para uma aplicação web integrada, conservar a separação entre interface, API, regras de negócio e persistência, e tornar as alterações rastreáveis por testes e documentação. A Fase 02 já implementou o cliente HTTP, a sessão autenticada do navegador, a atualização das telas a partir das respostas da API e a especificação OpenAPI. Permanecem como objetivos de validação aplicar as migrations em banco de teste, comprovar as operações persistentes ponta a ponta, percorrer todas as telas em navegador real, ampliar testes de regras e segurança e planejar autorização granular e tratamento de dados adequado antes de qualquer uso com informações clínicas reais.
+
+7 CRONOGRAMA DO SEMESTRE
+
+O cronograma registra resultados efetivamente observados, separando implementação local de validação dependente de infraestrutura externa. As etapas sem banco de teste permanecem pendentes, sem previsão artificial de conclusão.
+
+Tabela para reconstrução no Word (Etapa | Atividade | Situação e resultado):
+Fase 01 | Revisar arquitetura, requisitos e dados | Concluída — divergências de modelo e documentação foram identificadas no incremento anterior.
+Fase 01 | Organizar services e regras de negócio | Concluída — validações e responsabilidades do backend foram estruturadas.
+Fase 01 | Alinhar modelo ao Prisma | Concluída no código — schema, migrations e consultas foram versionados.
+Fase 01 | Verificar backend inicial | Concluída — sintaxe, schema e endpoint de saúde foram verificados.
+Fase 02 | Substituir localStorage por cliente HTTP | Concluída no código — telas consomem /api por frontend/js/api.js.
+Fase 02 | Integrar autenticação e perfil | Concluída e testada localmente — cookie HttpOnly, CSRF, Bearer, perfil e revogação por troca de senha.
+Fase 02 | Integrar cadastros, sessões, leituras e relatórios | Implementada; parcialmente verificada — teste HTTP cobre usuário, sessão, leitura sintética e agregação, mas não todos os fluxos visuais.
+Fase 02 | Documentar contrato e arquitetura | Concluída no repositório — docs/api.md, docs/openapi.yaml, diagramas e orientações atualizados.
+Fase 02 | Validar PostgreSQL/Supabase e migrations | Pendente — banco de teste não disponível; nenhuma gravação externa foi comprovada.
+Fase 02 | Validar interface completa e ampliar testes | Pendente — percorrer telas em navegador real e testar os demais CRUDs, falhas e controles de acesso.
+
+======================================================================
+6.7 — IDENTIFICAÇÃO DA SEÇÃO: PARTE 00 - HISTÓRICO DE VERSÃO DO PROJETO
+AÇÃO RECOMENDADA: ACRESCENTAR
+LOCALIZAÇÃO NO WORD: primeira tabela do documento, com cabeçalho “Versão | Período | Fase | Data | Descrição”; inserir uma linha após a versão 2.0, sem alterar registros históricos anteriores.
+JUSTIFICATIVA DA ALTERAÇÃO: A entrega da Fase 02 e suas limitações precisam de registro datado no mesmo padrão do documento.
+TEXTO FINAL PARA COPIAR E COLAR:
+
+Versão | Período | Fase | Data | Descrição
+2.1 | 6º | 02 | 18/10/2026 | Fase 02 do 6º período: integração HTTP do frontend à API REST, autenticação do navegador por cookie e CSRF, endpoints de perfil e troca de senha, revogação de tokens anteriores, atualização do modelo Admin, testes locais de integração e documentação OpenAPI; validação de persistência em PostgreSQL/Supabase pendente por ausência de banco de teste.
+
+Não acrescentar responsáveis, aprovações ou resultados de banco que não foram documentados.
+
+======================================================================
+AJUSTES CORRELATOS PARA EVITAR CONTRADIÇÕES COM AS SETE ÁREAS ACIMA
+As áreas seguintes não substituem as sete obrigatórias. Recomenda-se atualizá-las manualmente no mesmo Word porque ainda contêm afirmações da Fase 01 incompatíveis com a integração atual. Cada alteração abaixo traz texto pronto para inserção ou substituição.
+
+IDENTIFICAÇÃO DA SEÇÃO: 13 REGRAS DE NEGÓCIO
+AÇÃO RECOMENDADA: COMPLEMENTAR
+LOCALIZAÇÃO NO WORD: tabela de regras “ID | Regra | Evidência na implementação | RF”; substituir RN-001 e acrescentar RN-011. Conferir também RN-009 e RN-010 para não interpretar classificação recebida como cálculo automático.
+JUSTIFICATIVA: RN-001 menciona somente Bearer; a proteção por cookie/CSRF e revogação de senha precisam ficar documentadas.
+TEXTO FINAL PARA COPIAR E COLAR:
+RN-001 | As rotas de dados exigem JWT válido de administrador, por cookie HttpOnly ou Bearer; mutações por cookie exigem token CSRF. | Middleware auth valida assinatura, expiração, papel ADMIN, tokenVersion e X-CSRF-Token quando aplicável. | RF-006
+RN-011 | A alteração de senha exige conferência da senha atual, nova senha de no mínimo 12 caracteres e revogação dos tokens anteriores. | authService altera passwordHash com bcrypt e incrementa Admin.tokenVersion. | RF-006
+Nota explicativa após a tabela: O sistema valida classificações de esforço e fadiga recebidas e consolida sua distribuição nos relatórios. Não calcula automaticamente o risco clínico a partir das leituras.
+
+IDENTIFICAÇÃO DA SEÇÃO: 14 REQUISITOS FUNCIONAIS
+AÇÃO RECOMENDADA: SUBSTITUIR PARCIALMENTE
+LOCALIZAÇÃO NO WORD: tabela “ID | Descrição | Status | Prioridade”; manter as descrições e prioridades existentes e substituir os status indicados abaixo.
+JUSTIFICATIVA: vários status ainda dizem que a integração é pendente ou que o frontend é simulado.
+TEXTO FINAL PARA COPIAR E COLAR:
+RF-001 | Parcial — API e interface registram leitura sintética manual vinculada à sessão; dispositivo físico/ingestão automática pendentes.
+RF-002 | Parcial — classificações de esforço e fadiga são recebidas e agregadas; processamento automático a partir dos sinais não implementado.
+RF-003 | Implementado no código e integrado à tela de relatórios; persistência real não verificada neste ambiente.
+RF-004 | Implementado e coberto pelo teste HTTP local de CRUD de usuário; persistência real pendente de validação.
+RF-005 | Implementado no código e integrado à tela; teste HTTP específico e banco real pendentes.
+RF-006 | Implementado e testado localmente para administrador, cookie/CSRF e Bearer; autorização por profissional/paciente não implementada.
+RF-007 | Implementado no código e integrado ao dashboard; teste local do endpoint de resumo passou.
+RF-008 | Implementado no código; efeitos de cascata em PostgreSQL não verificados neste ambiente.
+RF-009 | Implementado no service; teste específico com banco não executado.
+RF-010 | Implementado no cliente HTTP: após mutações, a coleção é novamente buscada na API; fluxo de usuário testado.
+RF-011 | Implementado no código e integrado à tela; teste específico com banco não executado.
+RF-012 | Implementado no código; criação de sessão exercitada no teste HTTP local.
+RF-013 | Implementado no endpoint e nas telas de leitura/relatório; ordenação em PostgreSQL não verificada.
+
+IDENTIFICAÇÃO DA SEÇÃO: 18 DADOS E MODELAGEM DA INFORMAÇÃO
+AÇÃO RECOMENDADA: COMPLEMENTAR
+LOCALIZAÇÃO NO WORD: tabela “Entidade | Dados principais | Responsabilidade”, linha Admin, e texto explicativo subsequente.
+JUSTIFICATIVA: o esquema recebeu tokenVersion e a finalidade da coluna deve ficar rastreável.
+TEXTO FINAL PARA COPIAR E COLAR:
+Admin | id, name, email, passwordHash, tokenVersion, createdAt e updatedAt | Credenciais do operador e controle da validade de tokens após troca de senha.
+Na Fase 02, foi acrescentado o campo inteiro tokenVersion ao modelo Admin, com valor inicial zero e migração versionada. O JWT inclui essa versão, confrontada com o registro atual do administrador em cada requisição protegida; sua alteração invalida tokens anteriores. As demais sete entidades e quatro enumerações do esquema Prisma foram preservadas. A migração ainda não foi aplicada nem verificada em um PostgreSQL de teste neste ambiente.
+
+IDENTIFICAÇÃO DA SEÇÃO: 19 SOLUÇÃO TECNOLÓGICA E EXPERIMENTAÇÃO TÉCNICA INICIAL
+AÇÃO RECOMENDADA: SUBSTITUIR PARCIALMENTE
+LOCALIZAÇÃO NO WORD: itens 19.1 Escolhas Tecnológicas e 19.2 Experimentação Técnica e Primeiros Testes; substituir frases que dizem que frontend usa localStorage e que testes HTTP ocorrerão na fase seguinte.
+JUSTIFICATIVA: as afirmações descrevem o estado anterior e conflitariam com as seções 20–22.
+TEXTO FINAL PARA COPIAR E COLAR:
+19.1 Escolhas Tecnológicas
+O frontend utiliza HTML5, CSS3 e JavaScript e comunica-se com a API por fetch. O backend utiliza Node.js e Express; Prisma Client organiza o acesso programado ao PostgreSQL/Supabase. A interface e a API são servidas, por padrão, na mesma origem. A autenticação do navegador emprega cookie HttpOnly com proteção CSRF; clientes de API podem usar Bearer. localStorage não constitui mais a fonte de registros do sistema.
+19.2 Experimentação Técnica e Primeiros Testes
+A verificação técnica incluiu geração do Prisma Client, validação do schema, checagem de sintaxe dos arquivos JavaScript e dois testes automatizados aprovados. O teste integrado executou requisições HTTP reais entre o cliente frontend e a API local, abrangendo autenticação, CRUD de usuário, sessão, leitura sintética e agregação de relatório. Os delegates Prisma foram substituídos por objetos em memória; portanto, o ensaio não comprova persistência em PostgreSQL/Supabase. A verificação com banco de teste e o percurso visual completo das telas permanecem atividades futuras.
+
+IDENTIFICAÇÃO DA SEÇÃO: 23 ORGANIZAÇÃO DO CÓDIGO E REPOSITÓRIO
+AÇÃO RECOMENDADA: COMPLEMENTAR
+LOCALIZAÇÃO NO WORD: descrição dos diretórios frontend/js, backend/tests e docs.
+JUSTIFICATIVA: novos testes e a especificação OpenAPI reforçam a rastreabilidade da integração.
+TEXTO FINAL PARA COPIAR E COLAR:
+O arquivo frontend/js/api.js centraliza a comunicação HTTP, a gestão em memória do estado de sessão e a adaptação de dados para as páginas. O arquivo backend/tests/integration.test.js exercita o servidor HTTP e esse cliente com persistência substituída por memória; backend/tests/health.test.js verifica disponibilidade. A pasta docs contém a especificação OpenAPI em openapi.yaml, além da referência textual da API, arquitetura e segurança. O arquivo Atualizacoes_Documentacao_Fase_02.txt reúne as alterações acadêmicas para transposição manual ao Word, que não foi modificado por esta implementação.
+
+IDENTIFICAÇÃO DA SEÇÃO: 17.2 Modelagem e Diagramas do Sistema
+AÇÃO RECOMENDADA: REVISAR MANUALMENTE
+LOCALIZAÇÃO NO WORD: diagramas de casos de uso e classes conceituais anteriores à Parte 18.
+JUSTIFICATIVA: os diagramas conceituais apresentam Praticante e Profissional como atores, mas a autenticação implementada hoje pertence somente a Admin. Eles podem permanecer como visão futura se receberem uma legenda que distinga conceito e implementação.
+TEXTO FINAL PARA COPIAR E COLAR:
+Os diagramas desta subseção representam a visão conceitual e a evolução prevista do produto. No incremento da Fase 02, a autenticação implementada corresponde somente ao papel administrativo; profissionais e praticantes não possuem acesso individualizado. A arquitetura e o modelo persistente efetivamente implementados estão descritos nas seções 18, 20 e 22. Eventuais permissões por papel e fluxos de coleta automática dependem de implementação e validação futuras.
+
+======================================================================
+CONFERÊNCIA FINAL ANTES DO ENVIO
+
+1. Conferir se a data 18/10/2026 corresponde à data real de atualização adotada pelo grupo e se a numeração da versão 2.1 segue o controle interno do documento; não atribuir aprovação ou autoria sem confirmação.
+2. Substituir as sete áreas obrigatórias e os trechos correlatos no Word; revisar formatação e remissões cruzadas. Não inserir o código Mermaid como figura sem renderizá-lo por ferramenta apropriada.
+3. Não afirmar que migrations foram aplicadas no Supabase ou que testes com banco real passaram. Quando o grupo tiver um banco descartável, registrar posteriormente a evidência verdadeira.
+4. Verificar eventuais textos orientadores em vermelho e exportar o PDF final somente após revisão manual do Word pelo grupo.

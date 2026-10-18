@@ -1,7 +1,7 @@
 {
   "name": "vital-experience-api",
-  "version": "2.0.0",
-  "description": "Backend REST API do Vital Experience — 6º período, Fase 01",
+  "version": "2.1.0",
+  "description": "API REST e integração web do Vital Experience — 6º período, Fase 02",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

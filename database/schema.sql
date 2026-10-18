@@ -11,6 +11,7 @@ CREATE TABLE "admins" (
   "name" TEXT NOT NULL,
   "email" TEXT NOT NULL UNIQUE,
   "passwordHash" TEXT NOT NULL,
+  "tokenVersion" INTEGER NOT NULL DEFAULT 0,
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" TIMESTAMP(3) NOT NULL
 );

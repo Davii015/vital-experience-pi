@@ -76,8 +76,8 @@
                 <input type="email" id="fEmail" class="form-control" placeholder="seu@email.com">
               </div>
               <div class="form-group">
-                <label>Cargo / Função</label>
-                <input type="text" id="fRole" class="form-control" placeholder="Ex: Coordenador de Reabilitação" value="Administrador do Sistema">
+                <label>Função</label>
+                <input type="text" class="form-control" value="Administrador do Sistema" readonly>
               </div>
             </div>
             <div style="margin-top:20px">
@@ -100,7 +100,7 @@
                 </div>
                 <div class="form-group">
                   <label>Nova senha</label>
-                  <input type="password" id="fNewPass" class="form-control" placeholder="Mínimo 6 caracteres">
+                  <input type="password" id="fNewPass" class="form-control" placeholder="Mínimo 12 caracteres">
                 </div>
                 <div class="form-group">
                   <label>Confirmar nova senha</label>
@@ -119,27 +119,12 @@
             <div style="padding:20px 24px">
               <div style="display:flex;flex-direction:column;gap:12px" id="sysInfo"></div>
             </div>
-            <div style="padding:0 24px 20px">
-              <button class="btn btn-danger" style="width:100%;margin-top:8px" onclick="confirmReset()">⚠ Redefinir Dados de Demonstração</button>
-            </div>
           </div>
         </div>
 
       </div>
     </div>
   </main>
-
-  <!-- Reset confirm -->
-  <div class="modal-overlay" id="resetOverlay">
-    <div class="modal" style="max-width:400px">
-      <div class="modal-header"><div class="modal-title">Redefinir dados</div><button class="modal-close" onclick="document.getElementById('resetOverlay').classList.remove('active')">×</button></div>
-      <div class="modal-body"><p style="font-size:14px;color:var(--gray-600)">Isso irá apagar todos os dados cadastrados e recarregar os dados de demonstração iniciais. Esta ação não pode ser desfeita.</p></div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="document.getElementById('resetOverlay').classList.remove('active')">Cancelar</button>
-        <button class="btn btn-danger" onclick="doReset()">Redefinir</button>
-      </div>
-    </div>
-  </div>
 
   <script src="../js/api.js"></script>
   <script src="../js/perfil.js"></script>

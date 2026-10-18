@@ -1,100 +1,78 @@
-/* perfil.js */
-const user = API.auth.requireAuth();
-if (user) setTopbarUser(user);
-
-function loadProfile() {
-  const stored = JSON.parse(localStorage.getItem('ve_profile') || '{}');
-  const name   = stored.displayName || (user && user.name) || 'Admin';
-  const email  = stored.email       || (user && user.email) || 'admin@vitalexperience.com';
-
-  document.getElementById('fDisplayName').value = name;
-  document.getElementById('fEmail').value       = email;
-  if (stored.role) document.getElementById('fRole').value = stored.role;
-
-  document.getElementById('profileAvatar').textContent = getInitials(name);
-  document.getElementById('profileName').textContent   = name;
-  document.getElementById('profileEmail').textContent  = email;
+/* Perfil do administrador persistido no backend. */
+function fillProfile(user) {
+  document.getElementById('fDisplayName').value = user.name;
+  document.getElementById('fEmail').value = user.email;
+  document.getElementById('profileAvatar').textContent = getInitials(user.name);
+  document.getElementById('profileName').textContent = user.name;
+  document.getElementById('profileEmail').textContent = user.email;
+  setTopbarUser(user);
 }
 
-function saveProfile() {
-  const name  = document.getElementById('fDisplayName').value.trim();
+async function saveProfile() {
+  const name = document.getElementById('fDisplayName').value.trim();
   const email = document.getElementById('fEmail').value.trim();
-  const role  = document.getElementById('fRole').value.trim();
-  const errEl = document.getElementById('profileError');
-  const okEl  = document.getElementById('profileSuccess');
-
-  if (!name)  { errEl.textContent = 'Nome é obrigatório.';  errEl.style.display='block'; okEl.style.display='none'; return; }
-  if (!email) { errEl.textContent = 'E-mail é obrigatório.'; errEl.style.display='block'; okEl.style.display='none'; return; }
-
-  localStorage.setItem('ve_profile', JSON.stringify({ displayName: name, email, role }));
-
-  document.getElementById('profileAvatar').textContent = getInitials(name);
-  document.getElementById('profileName').textContent   = name;
-  document.getElementById('profileEmail').textContent  = email;
-
-  if (document.getElementById('sidebarUserName')) document.getElementById('sidebarUserName').textContent = name;
-  if (document.getElementById('topbarUserName'))  document.getElementById('topbarUserName').textContent  = name;
-
-  errEl.style.display = 'none';
-  okEl.textContent    = 'Perfil atualizado com sucesso!';
-  okEl.style.display  = 'block';
-  setTimeout(() => { okEl.style.display = 'none'; }, 3000);
+  const error = document.getElementById('profileError');
+  const success = document.getElementById('profileSuccess');
+  error.style.display = 'none';
+  success.style.display = 'none';
+  try {
+    const user = await API.auth.update({ name, email });
+    fillProfile(user);
+    success.textContent = 'Perfil atualizado no banco de dados.';
+    success.style.display = 'block';
+  } catch (failure) {
+    error.textContent = failure.message;
+    error.style.display = 'block';
+  }
 }
 
-function changePassword() {
-  const cur     = document.getElementById('fCurrentPass').value;
-  const nw      = document.getElementById('fNewPass').value;
-  const confirm = document.getElementById('fConfirmPass').value;
-  const errEl   = document.getElementById('passError');
-  const okEl    = document.getElementById('passSuccess');
-
-  if (!cur)            { errEl.textContent = 'Informe a senha atual.';           errEl.style.display='block'; okEl.style.display='none'; return; }
-  if (cur !== 'admin') { errEl.textContent = 'Senha atual incorreta.';           errEl.style.display='block'; okEl.style.display='none'; return; }
-  if (nw.length < 6)   { errEl.textContent = 'Nova senha deve ter 6+ caracteres.'; errEl.style.display='block'; okEl.style.display='none'; return; }
-  if (nw !== confirm)  { errEl.textContent = 'Senhas não coincidem.';            errEl.style.display='block'; okEl.style.display='none'; return; }
-
-  errEl.style.display = 'none';
-  okEl.textContent    = 'Senha alterada com sucesso!';
-  okEl.style.display  = 'block';
-  ['fCurrentPass','fNewPass','fConfirmPass'].forEach(f => document.getElementById(f).value = '');
-  setTimeout(() => { okEl.style.display = 'none'; }, 3000);
+async function changePassword() {
+  const current = document.getElementById('fCurrentPass').value;
+  const next = document.getElementById('fNewPass').value;
+  const confirmation = document.getElementById('fConfirmPass').value;
+  const error = document.getElementById('passError');
+  const success = document.getElementById('passSuccess');
+  error.style.display = 'none';
+  success.style.display = 'none';
+  if (next !== confirmation) {
+    error.textContent = 'As novas senhas não coincidem.';
+    error.style.display = 'block';
+    return;
+  }
+  try {
+    const result = await API.auth.changePassword(current, next);
+    success.textContent = result.message;
+    success.style.display = 'block';
+    for (const id of ['fCurrentPass', 'fNewPass', 'fConfirmPass']) document.getElementById(id).value = '';
+    setTimeout(() => { window.location.href = '/app/'; }, 1400);
+  } catch (failure) {
+    error.textContent = failure.message;
+    error.style.display = 'block';
+  }
 }
 
-function loadSysInfo() {
-  const users   = API.users.getAll().length;
-  const profs   = API.professionals.getAll().length;
-  const sensors = API.sensors.getAll().length;
-  const sessions= API.sessions.getAll().length;
-  const data    = API.sensorData.getAll().length;
-
+function loadSysInfo(summary) {
   const items = [
-    ['Versão do Sistema',    'v1.0.0 — Fase 2'],
-    ['Usuários Monitorados', `${users} cadastrado(s)`],
-    ['Profissionais',        `${profs} cadastrado(s)`],
-    ['Sensores',             `${sensors} dispositivo(s)`],
-    ['Sessões',              `${sessions} registro(s)`],
-    ['Leituras de Sensor',   `${data} leitura(s)`],
-    ['Armazenamento',        'localStorage (simulado)'],
+    ['Versão da API', 'v2.1.0 — 6º período, Fase 02'],
+    ['Usuários Monitorados', `${summary.users} cadastrado(s)`],
+    ['Profissionais', `${summary.professionals} cadastrado(s)`],
+    ['Sensores Ativos', `${summary.activeSensors} dispositivo(s)`],
+    ['Sessões', `${summary.sessions} registro(s)`],
+    ['Leituras de Sensor', `${summary.sensorReadings} leitura(s)`],
+    ['Armazenamento', 'PostgreSQL via Prisma'],
   ];
-
-  document.getElementById('sysInfo').innerHTML = items.map(([label, val]) => `
+  document.getElementById('sysInfo').innerHTML = items.map(([label, value]) => `
     <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--gray-200)">
-      <span style="font-size:13px;color:var(--gray-600)">${label}</span>
-      <span style="font-family:var(--font-mono);font-size:12px;font-weight:600">${val}</span>
+      <span style="font-size:13px;color:var(--gray-600)">${escapeHtml(label)}</span>
+      <span style="font-family:var(--font-mono);font-size:12px;font-weight:600">${escapeHtml(value)}</span>
     </div>`).join('');
 }
 
-function confirmReset() {
-  document.getElementById('resetOverlay').classList.add('active');
+async function init() {
+  const user = await API.auth.requireAuth();
+  if (!user) return;
+  fillProfile(user);
+  try { loadSysInfo(await API.reports.summary()); }
+  catch (failure) { showToast(failure.message, 'error'); }
 }
-
-function doReset() {
-  const keys = ['ve_users','ve_professionals','ve_sensors','ve_sessions','ve_sensor_data','ve_alerts'];
-  keys.forEach(k => localStorage.removeItem(k));
-  document.getElementById('resetOverlay').classList.remove('active');
-  showToast('Dados redefinidos — recarregando...', 'warning');
-  setTimeout(() => location.reload(), 1500);
-}
-
-loadProfile();
-loadSysInfo();
+init();

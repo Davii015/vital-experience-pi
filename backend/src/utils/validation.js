@@ -7,6 +7,14 @@ function requiredString(value, field) {
   return value.trim();
 }
 
+function emailValue(value, field = 'email') {
+  const email = requiredString(value, field).toLowerCase();
+  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new ApiError(400, `O campo ${field} deve conter um e-mail válido`);
+  }
+  return email;
+}
+
 function optionalString(value) {
   if (value === undefined || value === null || value === '') return null;
   if (typeof value !== 'string') throw new ApiError(400, 'Valor textual inválido');
@@ -59,6 +67,7 @@ function requestValue(body, camelCase, snakeCase) {
 
 module.exports = {
   requiredString,
+  emailValue,
   optionalString,
   positiveInt,
   numberInRange,

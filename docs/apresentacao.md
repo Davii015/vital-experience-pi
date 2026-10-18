@@ -1,71 +1,21 @@
-# Guia de Apresentação — Vital Experience Fase 2
+# Roteiro de apresentação — 6º período, Fase 02
 
-## Roteiro sugerido (15–20 min)
+## Preparação
 
-### 1. Introdução (2 min)
-- Apresentar o problema: monitoramento físico de pacientes em reabilitação e fisioterapia
-- Solução: sistema web integrado com sensores vestíveis
-- Equipe e papéis
+Use um PostgreSQL/Supabase **de teste e descartável**, configure `backend/.env`, aplique as migrations e crie um administrador de demonstração. O seed só pode ser executado após confirmação explícita de que a limpeza de todas as tabelas do projeto é aceitável. Defina uma senha própria; não existe senha padrão segura publicada. Inicie `npm run dev` e abra `http://localhost:3001/app/`.
 
-### 2. Demonstração do Frontend (8–10 min)
+Se não houver banco de teste, apresente apenas código, documentação e testes locais; não anuncie uma demonstração persistida em Supabase.
 
-**Ordem de navegação:**
+## Sequência sugerida
 
-| Tela | Ponto a destacar |
-|------|-----------------|
-| Login (`index.html`) | Design dividido, animação do botão, validação |
-| Dashboard | Stats em tempo real, gráfico de FC, alertas |
-| Usuários | CRUD completo, busca, associação a profissional |
-| Profissionais | Cores por especialidade, contagem de pacientes |
-| Sensores | Status coloridos, associação a paciente |
-| Sessões | Filtro por status, duração calculada |
-| Dados dos Sensores | Gráfico sparkline, simulação de leitura em tempo real |
-| Relatórios | Seleção de paciente, gráfico histórico, distribuição |
-| Perfil | Edição de dados, reset de demonstração |
+1. Apresente o problema, o escopo acadêmico e a arquitetura HTML/CSS/JavaScript → Express → services → Prisma → PostgreSQL.
+2. Mostre o login do administrador e a navegação autenticada. Explique cookie HttpOnly, cabeçalho CSRF e sessão com expiração.
+3. Cadastre um profissional e um usuário monitorado. Reabra a página e confirme os registros **somente se o banco de teste estiver configurado**.
+4. Cadastre um sensor, crie uma sessão e registre uma leitura sintética de demonstração. Diferencie explicitamente dado sintético de leitura de hardware.
+5. Consulte dashboard, histórico de leituras, relatórios agregados e perfil; altere a senha somente se puder reiniciar a sessão de demonstração.
+6. Mostre `docs/openapi.yaml`, `npm run check`, `npm test` e a diferença entre teste HTTP com persistência simulada e validação real do banco.
+7. Termine com limitações: ausência de sensores físicos, alertas automáticos, controle de acesso granular e validação com PostgreSQL neste ambiente.
 
-### 3. Arquitetura e Código (3–4 min)
-- Mostrar estrutura de pastas
-- Explicar `api.js` como camada de simulação localStorage
-- Mostrar backend Express (server.js + controllers)
-- Mostrar schema.sql do PostgreSQL
+## Evidência disponível no repositório
 
-### 4. Metodologia Scrum (2 min)
-- Sprints, backlog, cerimônias realizadas
-- Divisão de tarefas entre os membros
-
-### 5. Próximos passos (1 min)
-- Fase 3: integração real backend ↔ frontend
-- Deploy em nuvem (Railway / Render)
-- Dashboard em tempo real com WebSocket
-
----
-
-## Credenciais de demonstração
-
-| Campo | Valor |
-|-------|-------|
-| E-mail | `admin@vitalexperience.com` |
-| Senha | `admin` |
-
----
-
-## Dados pré-carregados
-
-O sistema inicializa automaticamente com:
-- **3 profissionais** (Fisioterapia, Educação Física, Neurológica)
-- **4 pacientes** com condições distintas
-- **5 sensores** (Monitor Cardíaco, Acelerômetro, Oxímetro, Giroscópio, EMG)
-- **5 sessões** (4 concluídas + 1 em andamento)
-- **~38 leituras** de sensores com FC, SpO₂, esforço e fadiga
-
----
-
-## Paleta de Cores
-
-| Cor | Hex | Uso |
-|-----|-----|-----|
-| Preto | `#0D0D0D` | Sidebar, fundo principal |
-| Cinza Claro | `#F0F0EC` | Fundo de conteúdo |
-| Amarelo | `#F5E642` | Destaques, nav ativo |
-| Verde | `#1DB954` | Status ativo, sucesso |
-| Rosa | `#FF2D7A` | Alertas, ações destrutivas |
+O frontend usa `fetch` para a API real e não depende de `localStorage` como banco. O teste HTTP local verifica login, CSRF, CRUD de usuário, perfil, troca de senha e Bearer; o esquema Prisma é validado. A persistência real e o fluxo visual completo ainda exigem um ambiente de teste apropriado.

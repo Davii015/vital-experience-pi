@@ -1,7 +1,4 @@
 /* usuarios.js */
-const user = API.auth.requireAuth();
-if (user) setTopbarUser(user);
-
 const colors = ['#F5E642','#1DB954','#FF2D7A','#3b82f6','#f97316'];
 const getColor = id => colors[(id-1) % colors.length];
 
@@ -41,22 +38,22 @@ function renderTable() {
       <tr>
         <td>
           <div style="display:flex;align-items:center;gap:10px">
-            <div style="width:34px;height:34px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-family:var(--font-syne);font-weight:700;font-size:11px;color:var(--black);flex-shrink:0">${getInitials(u.name)}</div>
+            <div style="width:34px;height:34px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-family:var(--font-syne);font-weight:700;font-size:11px;color:var(--black);flex-shrink:0">${escapeHtml(getInitials(u.name))}</div>
             <div>
-              <div class="td-primary">${u.name}</div>
+              <div class="td-primary">${escapeHtml(u.name)}</div>
               <div class="td-sub">ID #${u.id}</div>
             </div>
           </div>
         </td>
-        <td style="font-family:var(--font-mono);font-size:13px">${u.age} anos</td>
-        <td><span class="badge badge-gray">${u.gender||'—'}</span></td>
-        <td style="max-width:200px;font-size:13px">${u.condition||'—'}</td>
-        <td>${prof ? `<div class="td-primary" style="font-size:12.5px">${prof.name}</div><div class="td-sub">${prof.specialty}</div>` : '<span class="badge badge-gray">Não atribuído</span>'}</td>
+        <td style="font-family:var(--font-mono);font-size:13px">${u.age === null ? '—' : `${u.age} anos`}</td>
+        <td><span class="badge badge-gray">${escapeHtml(u.gender||'—')}</span></td>
+        <td style="max-width:200px;font-size:13px">${escapeHtml(u.condition||'—')}</td>
+        <td>${prof ? `<div class="td-primary" style="font-size:12.5px">${escapeHtml(prof.name)}</div><div class="td-sub">${escapeHtml(prof.specialty)}</div>` : '<span class="badge badge-gray">Não atribuído</span>'}</td>
         <td style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400)">${fmtDate(u.createdAt)}</td>
         <td>
           <div class="td-actions">
             <button class="btn btn-sm btn-ghost btn-icon" title="Editar" onclick="openModal(${u.id})">✎</button>
-            <button class="btn btn-sm btn-danger btn-icon" title="Remover" onclick="openDelete(${u.id},'${u.name.replace(/'/g,"\\'")}')">✕</button>
+            <button class="btn btn-sm btn-danger btn-icon" title="Remover" onclick="openDelete(${u.id})">✕</button>
           </div>
         </td>
       </tr>`;
@@ -71,13 +68,13 @@ function openModal(id = null) {
     const u = API.users.getById(id);
     document.getElementById('modalTitle').textContent = 'Editar Usuário';
     document.getElementById('fName').value       = u.name;
-    document.getElementById('fAge').value        = u.age;
+    document.getElementById('fBirthDate').value  = u.birthDate ? u.birthDate.slice(0,10) : '';
     document.getElementById('fGender').value     = u.gender;
     document.getElementById('fCondition').value  = u.condition;
     document.getElementById('fProf').value       = u.professionalId || '';
   } else {
     document.getElementById('modalTitle').textContent = 'Novo Usuário';
-    ['fName','fAge','fCondition'].forEach(f => document.getElementById(f).value = '');
+    ['fName','fBirthDate','fCondition'].forEach(f => document.getElementById(f).value = '');
     document.getElementById('fGender').value = 'Masculino';
     document.getElementById('fProf').value   = '';
   }
@@ -90,35 +87,40 @@ function closeModal() {
   editingId = null;
 }
 
-function saveUser() {
+async function saveUser() {
   const name      = document.getElementById('fName').value.trim();
-  const age       = parseInt(document.getElementById('fAge').value);
+  const birthDate = document.getElementById('fBirthDate').value;
   const gender    = document.getElementById('fGender').value;
   const condition = document.getElementById('fCondition').value.trim();
   const profId    = parseInt(document.getElementById('fProf').value) || null;
   const errEl     = document.getElementById('formError');
 
   if (!name)            { errEl.textContent = 'Nome é obrigatório.';              errEl.style.display='block'; return; }
-  if (!age || age < 1)  { errEl.textContent = 'Informe uma idade válida.';        errEl.style.display='block'; return; }
+  if (!birthDate || new Date(birthDate) > new Date()) { errEl.textContent = 'Informe uma data de nascimento válida.'; errEl.style.display='block'; return; }
   if (!condition)       { errEl.textContent = 'Condição/objetivo é obrigatório.'; errEl.style.display='block'; return; }
 
   errEl.style.display = 'none';
-  const data = { name, age, gender, condition, professionalId: profId };
+  const data = { name, birthDate, gender, condition, professionalId: profId };
 
-  if (editingId) {
-    API.users.update(editingId, data);
-    showToast('Usuário atualizado com sucesso');
-  } else {
-    API.users.create(data);
-    showToast('Usuário cadastrado com sucesso');
+  try {
+    if (editingId) {
+      await API.users.update(editingId, data);
+      showToast('Usuário atualizado com sucesso');
+    } else {
+      await API.users.create(data);
+      showToast('Usuário cadastrado com sucesso');
+    }
+    closeModal();
+    renderTable();
+  } catch (error) {
+    errEl.textContent = error.message;
+    errEl.style.display = 'block';
   }
-  closeModal();
-  renderTable();
 }
 
-function openDelete(id, name) {
+function openDelete(id) {
   deletingId = id;
-  document.getElementById('deleteUserName').textContent = name;
+  document.getElementById('deleteUserName').textContent = API.users.getById(id)?.name || 'este usuário';
   document.getElementById('deleteOverlay').classList.add('active');
 }
 
@@ -127,11 +129,20 @@ function closeDelete() {
   deletingId = null;
 }
 
-function confirmDelete() {
-  API.users.delete(deletingId);
-  showToast('Usuário removido', 'warning');
-  closeDelete();
-  renderTable();
+async function confirmDelete() {
+  try {
+    await API.users.delete(deletingId);
+    showToast('Usuário removido', 'warning');
+    closeDelete();
+    renderTable();
+  } catch (error) { showToast(error.message, 'error'); }
 }
 
-renderTable();
+async function init() {
+  const user = await API.auth.requireAuth();
+  if (!user) return;
+  setTopbarUser(user);
+  try { await API.load('users', 'professionals'); renderTable(); }
+  catch (error) { showToast(error.message, 'error'); }
+}
+init();

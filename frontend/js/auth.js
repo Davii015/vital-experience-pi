@@ -1,13 +1,10 @@
 /* auth.js — Vital Experience login page logic */
 
-// Redirecionar se já estiver logado
-(function() {
-  if (API.auth.getUser()) {
-    window.location.href = 'pages/dashboard.html';
-  }
-})();
+API.auth.requireAuth().then((user) => {
+  if (user) window.location.href = '/app/pages/dashboard.html';
+});
 
-function handleLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
   const email    = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
@@ -18,23 +15,13 @@ function handleLogin(e) {
   btn.textContent = 'Entrando...';
   btn.disabled = true;
 
-  // Simula delay de rede
-  setTimeout(() => {
-    const res = API.auth.login(email, password);
-    if (res.ok) {
-      btn.textContent = '✓ Redirecionando...';
-      btn.style.background = '#1DB954';
-      btn.style.color = 'white';
-      setTimeout(() => { window.location.href = 'pages/dashboard.html'; }, 500);
-    } else {
-      errEl.textContent = res.error;
-      errEl.style.display = 'block';
-      btn.textContent = 'Entrar';
-      btn.disabled = false;
-    }
-  }, 600);
-}
-
-function logout() {
-  API.auth.logout();
+  try {
+    await API.auth.login(email, password);
+    window.location.href = '/app/pages/dashboard.html';
+  } catch (error) {
+    errEl.textContent = error.message;
+    errEl.style.display = 'block';
+    btn.textContent = 'Entrar';
+    btn.disabled = false;
+  }
 }

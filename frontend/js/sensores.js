@@ -1,14 +1,11 @@
 /* sensores.js */
-const user = API.auth.requireAuth();
-if (user) setTopbarUser(user);
-
 let editingId = null, deletingId = null;
 
 function loadUserOptions(selectedId = '') {
   const sel = document.getElementById('fUser');
   const cur = selectedId || sel.value;
   sel.innerHTML = '<option value="">Sem associação</option>';
-  API.users.getAll().forEach(u => {
+  API.users.getAll().filter(u => u.status === 'ATIVO' || u.id === Number(cur)).forEach(u => {
     const opt = document.createElement('option');
     opt.value = u.id; opt.textContent = u.name;
     sel.appendChild(opt);
@@ -48,15 +45,15 @@ function renderTable() {
     const color = statusColor[s.status] || '#9E9E9A';
     return `
       <tr>
-        <td><span class="badge" style="background:${color}22;color:${color}">${s.type||'—'}</span></td>
-        <td><div class="td-primary">${s.model||'—'}</div></td>
-        <td style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400)">${s.serial||'—'}</td>
-        <td>${u ? `<div class="td-primary" style="font-size:12.5px">${u.name}</div>` : '<span class="badge badge-gray">Não associado</span>'}</td>
-        <td><span class="badge" style="background:${color}22;color:${color}">${s.status||'—'}</span></td>
+        <td><span class="badge" style="background:${color}22;color:${color}">${escapeHtml(s.type||'—')}</span></td>
+        <td><div class="td-primary">${escapeHtml(s.model||'—')}</div></td>
+        <td style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400)">${escapeHtml(s.serial||'—')}</td>
+        <td>${u ? `<div class="td-primary" style="font-size:12.5px">${escapeHtml(u.name)}</div>` : '<span class="badge badge-gray">Não associado</span>'}</td>
+        <td><span class="badge" style="background:${color}22;color:${color}">${escapeHtml(s.status||'—')}</span></td>
         <td>
           <div class="td-actions">
             <button class="btn btn-sm btn-ghost btn-icon" title="Editar" onclick="openModal(${s.id})">✎</button>
-            <button class="btn btn-sm btn-danger btn-icon" title="Remover" onclick="openDelete(${s.id},'${(s.model||'Sensor').replace(/'/g,"\\'")}')">✕</button>
+            <button class="btn btn-sm btn-danger btn-icon" title="Remover" onclick="openDelete(${s.id})">✕</button>
           </div>
         </td>
       </tr>`;
@@ -65,7 +62,7 @@ function renderTable() {
 
 function openModal(id = null) {
   editingId = id;
-  loadUserOptions();
+  loadUserOptions(id ? API.sensors.getById(id)?.userId : '');
   document.getElementById('formError').style.display = 'none';
   if (id) {
     const s = API.sensors.getAll().find(s => s.id === id);
@@ -87,7 +84,7 @@ function openModal(id = null) {
 
 function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); editingId = null; }
 
-function saveSensor() {
+async function saveSensor() {
   const type   = document.getElementById('fType').value;
   const model  = document.getElementById('fModel').value.trim();
   const serial = document.getElementById('fSerial').value.trim();
@@ -101,24 +98,34 @@ function saveSensor() {
   errEl.style.display = 'none';
   const data = { type, model, serial, status, userId };
 
-  if (editingId) { API.sensors.update(editingId, data); showToast('Sensor atualizado'); }
-  else           { API.sensors.create(data);             showToast('Sensor cadastrado'); }
-
-  closeModal(); renderTable();
+  try {
+    if (editingId) { await API.sensors.update(editingId, data); showToast('Sensor atualizado'); }
+    else           { await API.sensors.create(data);             showToast('Sensor cadastrado'); }
+    closeModal(); renderTable();
+  } catch (error) { errEl.textContent = error.message; errEl.style.display = 'block'; }
 }
 
-function openDelete(id, name) {
+function openDelete(id) {
   deletingId = id;
-  document.getElementById('deleteSensorName').textContent = name;
+  document.getElementById('deleteSensorName').textContent = API.sensors.getById(id)?.model || 'este sensor';
   document.getElementById('deleteOverlay').classList.add('active');
 }
 
 function closeDelete() { document.getElementById('deleteOverlay').classList.remove('active'); deletingId = null; }
 
-function confirmDelete() {
-  API.sensors.delete(deletingId);
-  showToast('Sensor removido', 'warning');
-  closeDelete(); renderTable();
+async function confirmDelete() {
+  try {
+    await API.sensors.delete(deletingId);
+    showToast('Sensor removido', 'warning');
+    closeDelete(); renderTable();
+  } catch (error) { showToast(error.message, 'error'); }
 }
 
-renderTable();
+async function init() {
+  const user = await API.auth.requireAuth();
+  if (!user) return;
+  setTopbarUser(user);
+  try { await API.load('sensors', 'users'); renderTable(); }
+  catch (error) { showToast(error.message, 'error'); }
+}
+init();

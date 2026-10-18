@@ -1,0 +1,374 @@
+openapi: 3.0.3
+info:
+  title: Vital Experience API
+  version: 2.1.0
+  description: >-
+    Contrato HTTP da Fase 02. A API oferece autenticação de administrador,
+    cadastros, sessões, leituras e consultas agregadas. A persistência em
+    PostgreSQL depende da configuração externa do ambiente.
+servers:
+  - url: http://localhost:3001/api
+security:
+  - sessionCookie: []
+  - bearerAuth: []
+paths:
+  /auth/login:
+    post:
+      summary: Autentica um administrador
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+                mode: { type: string, enum: [bearer], description: Omitir para sessão por cookie }
+      responses:
+        '200': { description: Cookie ve_session e user/csrfToken, ou token/user no modo bearer }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /auth/me:
+    get:
+      summary: Obtém o administrador autenticado e o CSRF quando há cookie
+      responses:
+        '200': { description: user e csrfToken (null em modo bearer) }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    put:
+      summary: Atualiza nome e/ou e-mail do administrador
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+      responses:
+        '200': { description: Perfil atualizado }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /auth/password:
+    put:
+      summary: Altera a senha e invalida tokens anteriores
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword: { type: string }
+                newPassword: { type: string, minLength: 12 }
+      responses:
+        '200': { description: Senha alterada; o cliente deve autenticar novamente }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /auth/logout:
+    post:
+      summary: Limpa o cookie de sessão local
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      responses:
+        '200': { description: Cookie removido }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /users:
+    get:
+      summary: Lista usuários monitorados
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      summary: Cria usuário monitorado
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      requestBody: { $ref: '#/components/requestBodies/User' }
+      responses:
+        '201': { $ref: '#/components/responses/Record' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /users/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      summary: Consulta usuário monitorado
+      responses:
+        '200': { $ref: '#/components/responses/Record' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      summary: Atualiza usuário monitorado
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      requestBody: { $ref: '#/components/requestBodies/User' }
+      responses:
+        '200': { $ref: '#/components/responses/Record' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      summary: Exclui usuário monitorado
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      responses:
+        '200': { description: Registro removido }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /professionals:
+    get:
+      summary: Lista profissionais
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+    post:
+      summary: Cria profissional
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      requestBody: { $ref: '#/components/requestBodies/Professional' }
+      responses:
+        '201': { $ref: '#/components/responses/Record' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /professionals/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      summary: Consulta profissional
+      responses:
+        '200': { $ref: '#/components/responses/Record' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      summary: Atualiza profissional
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      requestBody: { $ref: '#/components/requestBodies/Professional' }
+      responses:
+        '200': { $ref: '#/components/responses/Record' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      summary: Exclui profissional sem vínculos impeditivos
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      responses:
+        '200': { description: Registro removido }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /sensors:
+    get:
+      summary: Lista sensores
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+    post:
+      summary: Cria sensor
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      requestBody: { $ref: '#/components/requestBodies/Sensor' }
+      responses:
+        '201': { $ref: '#/components/responses/Record' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /sensors/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      summary: Consulta sensor
+      responses:
+        '200': { $ref: '#/components/responses/Record' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      summary: Atualiza sensor
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      requestBody: { $ref: '#/components/requestBodies/Sensor' }
+      responses:
+        '200': { $ref: '#/components/responses/Record' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      summary: Exclui sensor
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      responses:
+        '200': { description: Registro removido }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /sessions:
+    get:
+      summary: Lista sessões
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+    post:
+      summary: Cria sessão
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      requestBody: { $ref: '#/components/requestBodies/Session' }
+      responses:
+        '201': { $ref: '#/components/responses/Record' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /sessions/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      summary: Consulta sessão e suas leituras
+      responses:
+        '200': { $ref: '#/components/responses/Record' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      summary: Atualiza sessão
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      requestBody: { $ref: '#/components/requestBodies/Session' }
+      responses:
+        '200': { $ref: '#/components/responses/Record' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      summary: Exclui sessão e suas leituras vinculadas
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      responses:
+        '200': { description: Registro removido }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /sensor-data:
+    get:
+      summary: Lista leituras
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+    post:
+      summary: Registra leitura de uma sessão
+      parameters: [{ $ref: '#/components/parameters/CsrfToken' }]
+      requestBody: { $ref: '#/components/requestBodies/SensorData' }
+      responses:
+        '201': { $ref: '#/components/responses/Record' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /sensor-data/session/{sessionId}:
+    get:
+      summary: Lista leituras de uma sessão
+      parameters: [{ $ref: '#/components/parameters/SessionId' }]
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /sensor-data/{id}:
+    delete:
+      summary: Exclui uma leitura
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+        - { $ref: '#/components/parameters/CsrfToken' }
+      responses:
+        '200': { description: Leitura removida }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reports/user/{userId}:
+    get:
+      summary: Consulta consolidação de um usuário
+      parameters: [{ $ref: '#/components/parameters/UserId' }]
+      responses:
+        '200': { $ref: '#/components/responses/Record' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reports/summary:
+    get:
+      summary: Consulta totais do sistema
+      responses:
+        '200': { $ref: '#/components/responses/Record' }
+components:
+  securitySchemes:
+    sessionCookie: { type: apiKey, in: cookie, name: ve_session }
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    Id: { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+    SessionId: { name: sessionId, in: path, required: true, schema: { type: integer, minimum: 1 } }
+    UserId: { name: userId, in: path, required: true, schema: { type: integer, minimum: 1 } }
+    CsrfToken:
+      name: X-CSRF-Token
+      in: header
+      required: false
+      description: Obrigatório para mutações autenticadas por cookie; dispensado no modo Bearer.
+      schema: { type: string }
+  requestBodies:
+    User:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              conditionDescription: { type: string }
+              birthDate: { type: string, format: date }
+              gender: { type: string, enum: [MASCULINO, FEMININO, OUTRO, NAO_INFORMADO] }
+              professionalId: { type: integer, nullable: true }
+              email: { type: string, format: email }
+              phone: { type: string }
+              status: { type: string, enum: [ATIVO, INATIVO] }
+    Professional:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              specialty: { type: string }
+              email: { type: string, format: email }
+              phone: { type: string }
+              registrationNumber: { type: string }
+              status: { type: string, enum: [ATIVO, INATIVO] }
+    Sensor:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              type: { type: string }
+              serialNumber: { type: string }
+              status: { type: string, enum: [ATIVO, INATIVO] }
+              batteryLevel: { type: integer }
+              lastSync: { type: string, format: date-time }
+              userId: { type: integer, nullable: true }
+    Session:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              userId: { type: integer }
+              professionalId: { type: integer, nullable: true }
+              sessionType: { type: string }
+              startedAt: { type: string, format: date-time }
+              endedAt: { type: string, format: date-time, nullable: true }
+              status: { type: string, enum: [EM_ANDAMENTO, FINALIZADA, CANCELADA] }
+              title: { type: string }
+              notes: { type: string }
+    SensorData:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              sessionId: { type: integer }
+              sensorId: { type: integer, nullable: true }
+              heartRate: { type: integer }
+              movementLevel: { type: number }
+              effortLevel: { type: string }
+              fatigueRisk: { type: string, enum: [BAIXO, MODERADO, ALTO] }
+              oxygenLevel: { type: number }
+              bodyTemperature: { type: number }
+              steps: { type: integer }
+              recordedAt: { type: string, format: date-time }
+  responses:
+    List: { description: Lista JSON de registros }
+    Record: { description: Registro ou consolidação em JSON }
+    BadRequest: { description: Entrada inválida }
+    Unauthorized: { description: Credenciais ou sessão inválidas }
+    Forbidden: { description: Token CSRF ausente ou inválido }
+    NotFound: { description: Registro ou rota inexistente }
+    Conflict: { description: Duplicidade ou conflito de regra }

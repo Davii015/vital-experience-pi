@@ -9,6 +9,6 @@ function javascriptFiles(directory) {
   });
 }
 
-const files = ['server.js', ...javascriptFiles('src'), ...javascriptFiles('prisma'), ...javascriptFiles('tests')];
+const files = ['server.js', ...javascriptFiles('src'), ...javascriptFiles('prisma'), ...javascriptFiles('tests'), ...javascriptFiles('../frontend/js')];
 for (const file of files) execFileSync(process.execPath, ['--check', file], { stdio: 'inherit' });
 console.log(`Sintaxe validada em ${files.length} arquivos JavaScript.`);
