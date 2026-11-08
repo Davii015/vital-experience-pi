@@ -4,6 +4,8 @@ Sistema web de monitoramento físico e sensorial para reabilitação, fisioterap
 
 **Projeto Integrador — UniEVANGÉLICA — Engenharia de Software — 6º Período**
 
+**Entrega final:** [Documento de Especificação em PDF](docs/entrega-final/Documento_Especificacao_Vital_Experience_6P_Final_2026-11-08.pdf) · [Cópia editável em Word](docs/entrega-final/Documento_Especificacao_Vital_Experience_6P_Final_2026-11-08.docx)
+
 ---
 
 ## Equipe
@@ -25,7 +27,7 @@ Sistema web de monitoramento físico e sensorial para reabilitação, fisioterap
 - **Backend:** Node.js + Express (API REST em rotas, controllers e services)
 - **Autenticação:** JWT em cookie HttpOnly para o navegador (com CSRF), Bearer para clientes de API e bcryptjs
 - **ORM:** Prisma 5.x (fonte oficial do modelo e do acesso aos dados)
-- **Banco de Dados:** Supabase PostgreSQL
+- **Banco de Dados:** PostgreSQL 18 validado localmente; Supabase hospedado previsto, ainda sem ensaio
 
 ## Identidade Visual
 

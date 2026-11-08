@@ -98,7 +98,7 @@ const API = {
     },
     async requireAuth() {
       try {
-        const result = await request('/auth/me');
+        const result = await request('/auth/me', { redirectOn401: false });
         state.user = result.user;
         state.csrfToken = result.csrfToken;
         return state.user;
