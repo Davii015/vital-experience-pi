@@ -22,7 +22,6 @@ backend/prisma/migrations/*.sql.bak
 /docs/entrega-final/
 /docs/apresentacao.md
 /docs/diagramas.md
-/docs/responsabilidades-equipe.md
 /Atualizacoes_Documentacao_Fase_02.txt
 /PROGRESSO.md
 Logins*.txt

@@ -90,7 +90,9 @@ Os testes HTTP automatizados usam persistência simulada em memória e cobrem au
 - `frontend/`: telas, estilos e cliente HTTP.
 - `backend/`: API, schema, migrations, scripts de criação de contas e testes.
 - `docs/api.md`, `docs/openapi.yaml`, `docs/seguranca-privacidade.md`: referência técnica.
+- [Responsabilidades da equipe](docs/responsabilidades-equipe.md): divisão das atividades entre os integrantes.
+- Especificação acadêmica: [Word](docs/projeto/especificacao-vital-experience-2026-11-17.docx) e [PDF](docs/projeto/especificacao-vital-experience-2026-11-17.pdf). A revisão de 17/11 atualiza as responsabilidades da equipe; o conteúdo técnico do documento registra o ensaio de 08/11. Para executar a aplicação atual e conhecer seus acessos, siga este README.
 
-Apresentações, slides, documentos acadêmicos, SQL legado, credenciais, logs e dependências instaladas não fazem parte desta versão publicada. As migrations do Prisma são a fonte oficial da estrutura do banco.
+Apresentações, slides, roteiros de fala, versões acadêmicas anteriores, SQL legado, credenciais, logs e dependências instaladas não fazem parte desta versão publicada. As migrations do Prisma são a fonte oficial da estrutura do banco.
 
 O seed (`npm run prisma:seed`) é opcional e **apaga registros das tabelas do projeto** antes de recriar dados fictícios; use apenas em banco descartável, após definir `SEED_RESET_CONFIRM=APAGAR_DADOS_DE_DEMONSTRACAO`. Ele não é necessário para executar a aplicação nem para criar as contas acima.
