@@ -4,19 +4,25 @@ Base local: `http://localhost:3001/api`. Frontend integrado: `http://localhost:3
 
 ## Autenticação
 
-`POST /auth/login` verifica o e-mail e a senha do administrador no banco. Para o navegador, a resposta define `ve_session` como cookie `HttpOnly`, `SameSite=Strict` e `Secure` em produção, com duração padrão de 1 hora, e retorna `{ "user": {...}, "csrfToken": "..." }`. Requisições autenticadas com cookie que alteram dados precisam enviar `X-CSRF-Token`. O cliente HTTP do frontend faz isso automaticamente.
+`POST /auth/login` verifica o e-mail e a senha da conta no banco. O campo opcional `role` aceita `ADMIN` (padrão), `PROFESSIONAL` ou `PATIENT`; o tipo selecionado não concede permissões sem a conta correspondente. Para o navegador, a resposta define `ve_session` como cookie `HttpOnly`, `SameSite=Strict` e `Secure` em produção, com duração padrão de 1 hora, e retorna `{ "user": {...}, "csrfToken": "..." }`. Requisições autenticadas com cookie que alteram dados precisam enviar `X-CSRF-Token`. O cliente HTTP do frontend faz isso automaticamente.
 
 Clientes não navegadores podem enviar `"mode":"bearer"` no login. Nesse caso, a resposta inclui `token` e `user`; as requisições seguintes enviam `Authorization: Bearer <token>`, sem CSRF. Tokens nunca devem ser expostos em documentação, logs ou commits.
 
-`GET /auth/me` consulta a sessão e retorna o administrador. `PUT /auth/me` altera nome e/ou e-mail. `PUT /auth/password` exige senha atual e nova senha com 12 ou mais caracteres; ao alterar, incrementa `tokenVersion`, invalidando tokens anteriores. `POST /auth/logout` limpa o cookie local. Um Bearer já emitido continua válido até expirar ou até a senha ser alterada; logout Bearer não mantém lista de revogação.
+`GET /auth/me` consulta a sessão e retorna a identidade autenticada. Para profissionais, inclui `professionalId`, `specialty`, `registrationNumber` e `phone`, sem credenciais. `PUT /auth/me` altera nome e/ou e-mail apenas de administradores; profissionais e pacientes recebem 403 e solicitam alterações cadastrais ao administrador. `PUT /auth/password` exige senha atual e nova senha com 12 ou mais caracteres; ao alterar, incrementa `tokenVersion`, invalidando tokens anteriores. `POST /auth/logout` limpa o cookie local. Um Bearer já emitido continua válido até expirar ou até a senha ser alterada; logout Bearer não mantém lista de revogação.
 
-O sistema possui atualmente apenas o papel `ADMIN`: todos os administradores autenticados acessam os registros globais. Não há autorização por paciente, profissional ou equipe. Não usar dados clínicos reais até implementar e validar controles de acesso, consentimento e política de tratamento apropriados.
+Os papéis são `ADMIN`, `PROFESSIONAL` e `PATIENT`. Administradores mantêm acesso global. Profissionais consultam apenas pacientes vinculados, seus sensores e o próprio cadastro. Sessões e relatórios precisam ter o mesmo `professionalId` da conta e pertencer a um paciente atualmente vinculado. Leituras seguem o escopo da sessão, inclusive nos totais e nas relações aninhadas.
+
+Profissionais podem criar/atualizar sessões e registrar leituras nesse escopo. POST/PUT de usuários, sensores e profissionais, todas as exclusões e PUT de perfil exigem administrador. Ações proibidas retornam 403; registros fora do escopo retornam 404. Profissionais inativos não podem entrar ou reutilizar sessões. As credenciais são provisionadas localmente com `npm run account:professional -- <id>`; não há endpoint público de criação de contas.
+
+Pacientes recebem `userId`, nome, e-mail de login, data de nascimento, condição/objetivo e nome do responsável em `/auth/me`. Consultam apenas seu cadastro, sensores, sessões, leituras e relatórios. O diretório de profissionais fica limitado ao responsável atual; as relações aninhadas não incluem outros pacientes. Todos os endpoints de alteração de atendimentos ou cadastros são bloqueados para `PATIENT`, inclusive quando o ID corresponde ao próprio paciente. Apenas logout e troca da própria senha são permitidos. Pacientes inativos não podem entrar ou reutilizar sessões.
+
+A conta de paciente é criada por `npm run account:patient -- <id> [email]`, com e-mail de login único, senha bcrypt e vínculo único ao cadastro de paciente em `users`. O script não sobrescreve contas existentes. Não existe criação pública de contas.
 
 ## Endpoints
 
 | Método e caminho | Uso |
 |---|---|
-| `POST /auth/login` | Autenticar administrador (público) |
+| `POST /auth/login` | Autenticar administrador, profissional ou paciente (público) |
 | `GET /auth/me` | Consultar perfil e token CSRF da sessão por cookie |
 | `PUT /auth/me` | Atualizar nome/e-mail do administrador |
 | `PUT /auth/password` | Trocar senha e revogar tokens anteriores |
@@ -43,8 +49,8 @@ Os services aceitam alguns nomes legados em `snake_case`, mas o cliente atual en
 
 ## Erros
 
-As falhas são JSON com `error`: `400` entrada inválida, `401` autenticação/credenciais inválidas, `403` CSRF inválido, `404` rota ou registro ausente, `409` duplicidade/conflito de regra e `500` falha interna. Erros de banco inesperados não retornam detalhes sensíveis ao cliente.
+As falhas são JSON com `error`: `400` entrada inválida, `401` autenticação/credenciais inválidas, `403` permissão insuficiente ou CSRF inválido, `404` rota ou registro ausente, `409` duplicidade/conflito de regra e `500` falha interna. Erros de banco inesperados não retornam detalhes sensíveis ao cliente.
 
 ## Evidência e limite
 
-O teste HTTP local cobre login, sessão por cookie, CSRF, CRUD de usuário pelo cliente `api.js`, perfil, senha, revogação de token, modo Bearer e rejeição de leitura fora da faixa. Nesse teste, as operações Prisma usam substitutos em memória; a comunicação HTTP é real, mas a persistência PostgreSQL/Supabase ainda não foi comprovada neste ambiente.
+O teste HTTP local cobre login, sessão por cookie, CSRF, CRUD de usuário pelo cliente `api.js`, perfil, senha, revogação de token, modo Bearer e rejeição de leitura fora da faixa. Nesse teste, as operações Prisma usam substitutos em memória; a comunicação HTTP é real. Os testes adicionais de acesso profissional e paciente cobrem isolamento, relações aninhadas, tentativas de trocar responsáveis, inativação e revogação. Em 17/11/2026, login e consultas com a conta profissional também foram verificados no Supabase real, incluindo bloqueio de acesso a paciente alheio e preservação das contagens existentes.

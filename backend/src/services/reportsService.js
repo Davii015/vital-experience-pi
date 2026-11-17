@@ -1,13 +1,14 @@
 const prisma = require('../config/prisma');
 const ApiError = require('../errors/ApiError');
+const { userScope, professionalScope, sessionScope, sensorScope, readingScope, reportScope } = require('../utils/access');
 
-async function forUser(userId) {
+async function forUser(userId, actor) {
   const user = await prisma.user.findUnique({
-    where: { id: userId },
+    where: { id: userId, AND: [userScope(actor)] },
     include: {
       professional: true,
-      reports: { orderBy: { createdAt: 'desc' } },
-      sessions: { orderBy: { startedAt: 'asc' }, include: { sensorData: { orderBy: { recordedAt: 'asc' } } } },
+      reports: { where: reportScope(actor), orderBy: { createdAt: 'desc' } },
+      sessions: { where: sessionScope(actor), orderBy: { startedAt: 'asc' }, include: { sensorData: { orderBy: { recordedAt: 'asc' } } } },
     },
   });
   if (!user) throw new ApiError(404, 'Usuário não encontrado');
@@ -33,13 +34,13 @@ async function forUser(userId) {
   };
 }
 
-async function summary() {
+async function summary(actor) {
   const [users, professionals, activeSensors, sessions, sensorReadings] = await Promise.all([
-    prisma.user.count(),
-    prisma.professional.count(),
-    prisma.sensor.count({ where: { status: 'ATIVO' } }),
-    prisma.session.count(),
-    prisma.sensorData.count(),
+    prisma.user.count({ where: userScope(actor) }),
+    prisma.professional.count({ where: professionalScope(actor) }),
+    prisma.sensor.count({ where: { status: 'ATIVO', ...sensorScope(actor) } }),
+    prisma.session.count({ where: sessionScope(actor) }),
+    prisma.sensorData.count({ where: readingScope(actor) }),
   ]);
   return { users, professionals, activeSensors, sessions, sensorReadings };
 }

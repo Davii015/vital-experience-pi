@@ -43,7 +43,7 @@ function renderTable() {
   updateStats();
 
   if (!sessions.length) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="empty-icon">▶</span><h3>${q || filterSt ? 'Nenhum resultado' : 'Nenhuma sessão registrada'}</h3><p>Clique em "+ Nova Sessão" para começar.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="empty-icon">▶</span><h3>${q || filterSt ? 'Nenhum resultado' : 'Nenhuma sessão registrada'}</h3><p>${API.auth.getUser()?.role === 'PATIENT' ? 'Aguarde o registro de atendimentos pela equipe responsável.' : 'Clique em "+ Nova Sessão" para começar.'}</p></div></td></tr>`;
     return;
   }
 
@@ -65,10 +65,10 @@ function renderTable() {
         <td style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400)">${dur}</td>
         <td style="font-size:12.5px">${prof ? escapeHtml(prof.name) : '<span style="color:var(--gray-400)">—</span>'}</td>
         <td><span class="badge" style="background:${color}22;color:${color}">${s.status}</span></td>
-        <td>
+        <td data-care-team-only>
           <div class="td-actions">
             <button class="btn btn-sm btn-ghost btn-icon" title="Editar" onclick="openModal(${s.id})">✎</button>
-            <button class="btn btn-sm btn-danger btn-icon" title="Remover" onclick="openDelete(${s.id})">✕</button>
+            <button class="btn btn-sm btn-danger btn-icon" data-admin-only title="Remover" onclick="openDelete(${s.id})">✕</button>
           </div>
         </td>
       </tr>`;

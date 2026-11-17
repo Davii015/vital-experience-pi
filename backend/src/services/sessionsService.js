@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const ApiError = require('../errors/ApiError');
+const { isProfessional, userScope, sessionScope } = require('../utils/access');
 const { requiredString, optionalString, positiveInt, dateValue, enumValue, requestValue } = require('../utils/validation');
 
 async function ensureActive(model, id, label) {
@@ -37,18 +38,29 @@ function validateDates(data, current = {}) {
 
 const include = { user: true, professional: true, _count: { select: { sensorData: true } } };
 
-async function list() {
-  return prisma.session.findMany({ orderBy: { startedAt: 'desc' }, include });
+async function list(actor) {
+  return prisma.session.findMany({ where: sessionScope(actor), orderBy: { startedAt: 'desc' }, include });
 }
 
-async function get(id) {
-  const session = await prisma.session.findUnique({ where: { id }, include: { user: true, professional: true, sensorData: { orderBy: { recordedAt: 'asc' } } } });
+async function get(id, actor) {
+  const session = await prisma.session.findUnique({ where: { id, ...sessionScope(actor) }, include: { user: true, professional: true, sensorData: { orderBy: { recordedAt: 'asc' } } } });
   if (!session) throw new ApiError(404, 'Sessão não encontrada');
   return session;
 }
 
-async function create(body) {
+async function restrictAssignment(data, actor, current = {}) {
+  if (!isProfessional(actor)) return;
+  if ('professionalId' in data && data.professionalId !== actor.professionalId) {
+    throw new ApiError(403, 'A sessão deve permanecer vinculada ao profissional autenticado');
+  }
+  const user = await prisma.user.findUnique({ where: { id: data.userId ?? current.userId, ...userScope(actor) } });
+  if (!user) throw new ApiError(404, 'Usuário não encontrado');
+  data.professionalId = actor.professionalId;
+}
+
+async function create(body, actor) {
   const data = dataFrom(body);
+  await restrictAssignment(data, actor);
   validateDates(data);
   await Promise.all([
     ensureActive('user', data.userId, 'Usuário monitorado'),
@@ -57,16 +69,17 @@ async function create(body) {
   return prisma.session.create({ data, include });
 }
 
-async function update(id, body) {
-  const current = await get(id);
+async function update(id, body, actor) {
+  const current = await get(id, actor);
   const data = dataFrom(body, true);
   if (!Object.keys(data).length) throw new ApiError(400, 'Nenhum campo válido foi informado');
+  await restrictAssignment(data, actor, current);
   validateDates(data, current);
   await Promise.all([
     'userId' in data ? ensureActive('user', data.userId, 'Usuário monitorado') : null,
     'professionalId' in data ? ensureActive('professional', data.professionalId, 'Profissional') : null,
   ]);
-  return prisma.session.update({ where: { id }, data, include });
+  return prisma.session.update({ where: { id, ...sessionScope(actor) }, data, include });
 }
 
 async function remove(id) {

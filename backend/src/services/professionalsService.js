@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const ApiError = require('../errors/ApiError');
+const { isProfessional, isPatient, professionalScope, userScope, sessionScope, reportScope } = require('../utils/access');
 const { requiredString, optionalString, enumValue } = require('../utils/validation');
 
 function dataFrom(body, partial = false) {
@@ -13,12 +14,16 @@ function dataFrom(body, partial = false) {
   return data;
 }
 
-async function list() {
-  return prisma.professional.findMany({ orderBy: { id: 'asc' }, include: { _count: { select: { users: true, sessions: true } } } });
+async function list(actor) {
+  return prisma.professional.findMany({ where: professionalScope(actor), orderBy: { id: 'asc' },
+    include: { _count: { select: { users: { where: userScope(actor) }, sessions: { where: sessionScope(actor) } } } } });
 }
 
-async function get(id) {
-  const professional = await prisma.professional.findUnique({ where: { id }, include: { users: true, sessions: true, reports: true } });
+async function get(id, actor) {
+  if ((isProfessional(actor) || isPatient(actor)) && id !== actor.professionalId) throw new ApiError(404, 'Profissional não encontrado');
+  const professional = await prisma.professional.findUnique({ where: { id }, include: {
+    users: { where: userScope(actor) }, sessions: { where: sessionScope(actor) }, reports: { where: reportScope(actor) },
+  } });
   if (!professional) throw new ApiError(404, 'Profissional não encontrado');
   return professional;
 }

@@ -13,9 +13,9 @@
     <nav class="sidebar-nav">
       <span class="nav-section-label">Principal</span>
       <a href="dashboard.html" class="nav-item"><span class="nav-icon">▣</span> Dashboard</a>
-      <span class="nav-section-label">Cadastros</span>
-      <a href="usuarios.html" class="nav-item"><span class="nav-icon">◎</span> Usuários</a>
-      <a href="profissionais.html" class="nav-item"><span class="nav-icon">◈</span> Profissionais</a>
+      <span data-care-team-only class="nav-section-label">Cadastros</span>
+      <a data-care-team-only href="usuarios.html" class="nav-item"><span class="nav-icon">◎</span> Usuários</a>
+      <a data-admin-only href="profissionais.html" class="nav-item"><span class="nav-icon">◈</span> Profissionais</a>
       <span class="nav-section-label">Monitoramento</span>
       <a href="sensores.html" class="nav-item"><span class="nav-icon">◉</span> Sensores</a>
       <a href="sessoes.html" class="nav-item active"><span class="nav-icon">▶</span> Sessões</a>
@@ -45,7 +45,7 @@
     <div class="content-area">
       <div class="page-header">
         <div class="page-header-text"><h2>Sessões de Monitoramento</h2><p>Registros de atividade e reabilitação</p></div>
-        <div class="page-header-actions"><button class="btn btn-primary" onclick="openModal()">+ Nova Sessão</button></div>
+        <div class="page-header-actions"><button class="btn btn-primary" data-care-team-only onclick="openModal()">+ Nova Sessão</button></div>
       </div>
 
       <!-- Stats -->
@@ -74,7 +74,7 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Paciente</th><th>Tipo</th><th>Início</th><th>Duração</th><th>Profissional</th><th>Status</th><th>Ações</th></tr></thead>
+            <thead><tr><th>Paciente</th><th>Tipo</th><th>Início</th><th>Duração</th><th>Profissional</th><th>Status</th><th data-care-team-only>Ações</th></tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>

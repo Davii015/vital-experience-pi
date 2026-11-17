@@ -30,7 +30,7 @@ function renderSessions() {
   const tbody    = document.getElementById('sessionsTbody');
 
   if (!sessions.length) {
-    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><span class="empty-icon">📋</span><h3>Nenhuma sessão registrada</h3><p>Crie a primeira sessão de monitoramento.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><span class="empty-icon">📋</span><h3>Nenhuma sessão registrada</h3><p>${API.auth.getUser()?.role === 'PATIENT' ? 'A equipe ainda não registrou suas sessões.' : 'Crie a primeira sessão de monitoramento.'}</p></div></td></tr>`;
     return;
   }
 

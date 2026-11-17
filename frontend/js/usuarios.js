@@ -27,7 +27,7 @@ function renderTable() {
   document.getElementById('countLabel').textContent = `${users.length} registro(s)`;
 
   if (!users.length) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="empty-icon">👤</span><h3>${document.getElementById('searchInput').value ? 'Nenhum resultado' : 'Nenhum usuário cadastrado'}</h3><p>Clique em "+ Novo Usuário" para começar.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="empty-icon">👤</span><h3>${document.getElementById('searchInput').value ? 'Nenhum resultado' : 'Nenhum usuário cadastrado'}</h3><p>${API.auth.isAdmin() ? 'Clique em "+ Novo Usuário" para começar.' : 'Nenhum paciente vinculado ao seu cadastro.'}</p></div></td></tr>`;
     return;
   }
 
@@ -50,8 +50,8 @@ function renderTable() {
         <td style="max-width:200px;font-size:13px">${escapeHtml(u.condition||'—')}</td>
         <td>${prof ? `<div class="td-primary" style="font-size:12.5px">${escapeHtml(prof.name)}</div><div class="td-sub">${escapeHtml(prof.specialty)}</div>` : '<span class="badge badge-gray">Não atribuído</span>'}</td>
         <td style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400)">${fmtDate(u.createdAt)}</td>
-        <td>
-          <div class="td-actions">
+        <td data-admin-only>
+          <div class="td-actions" data-admin-only>
             <button class="btn btn-sm btn-ghost btn-icon" title="Editar" onclick="openModal(${u.id})">✎</button>
             <button class="btn btn-sm btn-danger btn-icon" title="Remover" onclick="openDelete(${u.id})">✕</button>
           </div>

@@ -17,9 +17,9 @@
     <nav class="sidebar-nav">
       <span class="nav-section-label">Principal</span>
       <a href="dashboard.html"     class="nav-item"><span class="nav-icon">▣</span> Dashboard</a>
-      <span class="nav-section-label">Cadastros</span>
-      <a href="usuarios.html"      class="nav-item active"><span class="nav-icon">◎</span> Usuários</a>
-      <a href="profissionais.html" class="nav-item"><span class="nav-icon">◈</span> Profissionais</a>
+      <span data-care-team-only class="nav-section-label">Cadastros</span>
+      <a data-care-team-only href="usuarios.html"      class="nav-item active"><span class="nav-icon">◎</span> Usuários</a>
+      <a data-admin-only href="profissionais.html" class="nav-item"><span class="nav-icon">◈</span> Profissionais</a>
       <span class="nav-section-label">Monitoramento</span>
       <a href="sensores.html"      class="nav-item"><span class="nav-icon">◉</span> Sensores</a>
       <a href="sessoes.html"       class="nav-item"><span class="nav-icon">▶</span> Sessões</a>
@@ -56,7 +56,7 @@
           <p>Pacientes e praticantes cadastrados no sistema</p>
         </div>
         <div class="page-header-actions">
-          <button class="btn btn-primary" onclick="openModal()">+ Novo Usuário</button>
+          <button class="btn btn-primary" data-admin-only onclick="openModal()">+ Novo Usuário</button>
         </div>
       </div>
 
@@ -80,7 +80,7 @@
                 <th>Condição</th>
                 <th>Profissional</th>
                 <th>Cadastro</th>
-                <th>Ações</th>
+                <th data-admin-only>Ações</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>

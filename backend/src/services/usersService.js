@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const ApiError = require('../errors/ApiError');
+const { userScope, sessionScope, reportScope } = require('../utils/access');
 const { requiredString, optionalString, positiveInt, dateValue, enumValue, requestValue } = require('../utils/validation');
 
 const include = { professional: true, sensors: true };
@@ -34,12 +35,13 @@ function dataFrom(body, partial = false) {
   return data;
 }
 
-async function list() {
-  return prisma.user.findMany({ orderBy: { id: 'asc' }, include });
+async function list(actor) {
+  return prisma.user.findMany({ where: userScope(actor), orderBy: { id: 'asc' }, include });
 }
 
-async function get(id) {
-  const user = await prisma.user.findUnique({ where: { id }, include: { ...include, sessions: true, reports: true } });
+async function get(id, actor) {
+  const user = await prisma.user.findUnique({ where: { id, AND: [userScope(actor)] },
+    include: { ...include, sessions: { where: sessionScope(actor) }, reports: { where: reportScope(actor) } } });
   if (!user) throw new ApiError(404, 'Usuário não encontrado');
   return user;
 }

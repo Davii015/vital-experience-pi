@@ -13,9 +13,9 @@
     <nav class="sidebar-nav">
       <span class="nav-section-label">Principal</span>
       <a href="dashboard.html" class="nav-item"><span class="nav-icon">▣</span> Dashboard</a>
-      <span class="nav-section-label">Cadastros</span>
-      <a href="usuarios.html" class="nav-item"><span class="nav-icon">◎</span> Usuários</a>
-      <a href="profissionais.html" class="nav-item"><span class="nav-icon">◈</span> Profissionais</a>
+      <span data-care-team-only class="nav-section-label">Cadastros</span>
+      <a data-care-team-only href="usuarios.html" class="nav-item"><span class="nav-icon">◎</span> Usuários</a>
+      <a data-admin-only href="profissionais.html" class="nav-item"><span class="nav-icon">◈</span> Profissionais</a>
       <span class="nav-section-label">Monitoramento</span>
       <a href="sensores.html" class="nav-item"><span class="nav-icon">◉</span> Sensores</a>
       <a href="sessoes.html" class="nav-item"><span class="nav-icon">▶</span> Sessões</a>
@@ -47,7 +47,7 @@
         <div class="page-header-text"><h2>Meu Perfil</h2><p>Gerencie suas informações e configurações de segurança</p></div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="profile-grid">
 
         <!-- Card de perfil -->
         <div class="card">
@@ -59,7 +59,7 @@
               <div>
                 <div id="profileName" style="font-family:var(--font-syne);font-weight:800;font-size:18px">Admin</div>
                 <div id="profileEmail" style="font-size:13px;color:var(--gray-400);margin-top:2px">admin@vitalexperience.com</div>
-                <div style="margin-top:6px"><span class="badge" style="background:#1DB95422;color:#1DB954">Administrador</span></div>
+                <div style="margin-top:6px"><span id="profileRole" class="badge" style="background:#1DB95422;color:#1DB954">Administrador</span></div>
               </div>
             </div>
 
@@ -77,11 +77,23 @@
               </div>
               <div class="form-group">
                 <label>Função</label>
-                <input type="text" class="form-control" value="Administrador do Sistema" readonly>
+                <input type="text" class="form-control" id="fRole" value="Administrador do Sistema" readonly>
               </div>
             </div>
+            <div data-professional-only class="form-grid form-grid-1" style="margin-top:20px">
+              <div class="form-group"><label for="fSpecialty">Especialidade</label><input id="fSpecialty" class="form-control" readonly></div>
+              <div class="form-group"><label for="fRegistration">Registro profissional</label><input id="fRegistration" class="form-control" readonly></div>
+              <div class="form-group"><label for="fPhone">Telefone</label><input id="fPhone" class="form-control" readonly></div>
+              <p style="font-size:13px;color:var(--gray-600);line-height:1.6">Você pode acompanhar seus pacientes, registrar sessões e leituras e consultar seus relatórios. Para atualizar seus dados cadastrais, solicite ao administrador.</p>
+            </div>
+            <div data-patient-only class="form-grid form-grid-1" style="margin-top:20px">
+              <div class="form-group"><label for="fBirthDate">Data de nascimento</label><input type="date" id="fBirthDate" class="form-control" readonly></div>
+              <div class="form-group"><label for="fResponsible">Profissional responsável</label><input id="fResponsible" class="form-control" readonly></div>
+              <div class="form-group"><label for="fCondition">Condição / objetivo de acompanhamento</label><textarea id="fCondition" class="form-control" rows="3" readonly></textarea></div>
+              <p style="font-size:13px;color:var(--gray-600);line-height:1.6">Consulte suas sessões, leituras e relatórios. Para corrigir dados cadastrais ou registros do atendimento, procure a equipe responsável.</p>
+            </div>
             <div style="margin-top:20px">
-              <button class="btn btn-primary" style="width:100%" onclick="saveProfile()">Salvar Alterações</button>
+              <button class="btn btn-primary" style="width:100%" data-admin-only onclick="saveProfile()">Salvar Alterações</button>
             </div>
           </div>
         </div>

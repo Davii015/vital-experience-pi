@@ -1,10 +1,22 @@
-/* Perfil do administrador persistido no backend. */
+/* Perfil da conta autenticada, com dados profissionais do cadastro existente. */
 function fillProfile(user) {
   document.getElementById('fDisplayName').value = user.name;
   document.getElementById('fEmail').value = user.email;
   document.getElementById('profileAvatar').textContent = getInitials(user.name);
   document.getElementById('profileName').textContent = user.name;
   document.getElementById('profileEmail').textContent = user.email;
+  const professional = user.role === 'PROFESSIONAL';
+  const patient = user.role === 'PATIENT';
+  document.getElementById('profileRole').textContent = patient ? 'Paciente' : professional ? 'Profissional' : 'Administrador';
+  document.getElementById('fRole').value = patient ? 'Paciente — acesso aos próprios dados' : professional ? 'Profissional de saúde / esporte' : 'Administrador do Sistema';
+  document.getElementById('fDisplayName').readOnly = user.role !== 'ADMIN';
+  document.getElementById('fEmail').readOnly = user.role !== 'ADMIN';
+  document.getElementById('fSpecialty').value = user.specialty || 'Não informado';
+  document.getElementById('fRegistration').value = user.registrationNumber || 'Não informado';
+  document.getElementById('fPhone').value = user.phone || 'Não informado';
+  document.getElementById('fBirthDate').value = user.birthDate ? user.birthDate.slice(0, 10) : '';
+  document.getElementById('fCondition').value = user.conditionDescription || 'Não informado';
+  document.getElementById('fResponsible').value = user.professionalName || 'Não atribuído';
   setTopbarUser(user);
 }
 

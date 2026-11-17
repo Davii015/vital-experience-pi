@@ -1,5 +1,7 @@
 node_modules/
 .env
+.env.*
+!.env.example
 *.log
 .DS_Store
 Thumbs.db
@@ -11,3 +13,17 @@ backend/prisma/migrations/*.sql.bak
 
 # Supabase local
 .supabase/
+
+# Materiais locais; a versão publicada contém apenas a aplicação e instruções.
+/apresentacao/
+/apresentacao-slides/
+/apresentação/
+/database/
+/docs/entrega-final/
+/docs/apresentacao.md
+/docs/diagramas.md
+/docs/responsabilidades-equipe.md
+/Atualizacoes_Documentacao_Fase_02.txt
+/PROGRESSO.md
+Logins*.txt
+*.zip

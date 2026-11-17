@@ -90,8 +90,9 @@ const API = {
   request,
   auth: {
     getUser: () => state.user,
-    async login(email, password) {
-      const result = await request('/auth/login', { method: 'POST', data: { email, password }, redirectOn401: false });
+    isAdmin: () => state.user?.role === 'ADMIN',
+    async login(email, password, role = 'ADMIN') {
+      const result = await request('/auth/login', { method: 'POST', data: { email, password, role }, redirectOn401: false });
       state.user = result.user;
       state.csrfToken = result.csrfToken;
       return result.user;
@@ -215,10 +216,26 @@ function toggleSidebar() {
 }
 function setTopbarUser(user) {
   if (!user) return;
+  const professional = user.role === 'PROFESSIONAL';
+  const patient = user.role === 'PATIENT';
+  document.body.classList.toggle('role-admin', user.role === 'ADMIN');
+  document.body.classList.toggle('role-professional', professional);
+  document.body.classList.toggle('role-patient', patient);
+  document.body.classList.toggle('role-care-team', ['ADMIN', 'PROFESSIONAL'].includes(user.role));
+  document.querySelectorAll('.sidebar-user-role').forEach((element) => {
+    element.textContent = patient ? 'Paciente' : professional ? 'Profissional' : 'Administrador';
+  });
+  if (patient) {
+    document.querySelectorAll('[data-patient-text]').forEach((element) => {
+      element.textContent = element.dataset.patientText;
+    });
+  }
   for (const id of ['topbarUserName', 'sidebarUserName']) {
     const element = document.getElementById(id);
     if (element) element.textContent = user.name;
   }
-  const avatar = document.getElementById('topbarAvatar');
-  if (avatar) avatar.textContent = getInitials(user.name);
+  for (const id of ['topbarAvatar', 'sidebarAvatar']) {
+    const avatar = document.getElementById(id);
+    if (avatar) avatar.textContent = getInitials(user.name);
+  }
 }

@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const ApiError = require('../errors/ApiError');
+const { sensorScope } = require('../utils/access');
 const { requiredString, optionalString, positiveInt, integerInRange, dateValue, enumValue, requestValue } = require('../utils/validation');
 
 async function ensureUser(id) {
@@ -25,12 +26,12 @@ function dataFrom(body, partial = false) {
   return data;
 }
 
-async function list() {
-  return prisma.sensor.findMany({ orderBy: { id: 'asc' }, include: { user: true } });
+async function list(actor) {
+  return prisma.sensor.findMany({ where: sensorScope(actor), orderBy: { id: 'asc' }, include: { user: true } });
 }
 
-async function get(id) {
-  const sensor = await prisma.sensor.findUnique({ where: { id }, include: { user: true } });
+async function get(id, actor) {
+  const sensor = await prisma.sensor.findUnique({ where: { id, ...sensorScope(actor) }, include: { user: true } });
   if (!sensor) throw new ApiError(404, 'Sensor não encontrado');
   return sensor;
 }

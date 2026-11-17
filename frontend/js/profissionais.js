@@ -39,8 +39,8 @@ function renderTable() {
           </div>
         </td>
         <td style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400)">${fmtDate(p.createdAt)}</td>
-        <td>
-          <div class="td-actions">
+        <td data-admin-only>
+          <div class="td-actions" data-admin-only>
             <button class="btn btn-sm btn-ghost btn-icon" title="Editar" onclick="openModal(${p.id})">✎</button>
             <button class="btn btn-sm btn-danger btn-icon" title="Remover" onclick="openDelete(${p.id})">✕</button>
           </div>
@@ -110,6 +110,7 @@ async function confirmDelete() {
 async function init() {
   const user = await API.auth.requireAuth();
   if (!user) return;
+  if (user.role !== 'ADMIN') { window.location.href = 'perfil.html'; return; }
   setTopbarUser(user);
   try { await API.load('professionals', 'users'); renderTable(); }
   catch (error) { showToast(error.message, 'error'); }

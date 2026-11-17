@@ -1,190 +1,96 @@
 # Vital Experience
 
-Sistema web de monitoramento físico e sensorial para reabilitação, fisioterapia e esporte adaptado.
+Aplicação de demonstração do Projeto Integrador — Engenharia de Software, 6º período, UniEVANGÉLICA. Permite acompanhar pacientes, profissionais, sensores, sessões, leituras e relatórios com três tipos de acesso.
 
-**Projeto Integrador — UniEVANGÉLICA — Engenharia de Software — 6º Período**
+Frontend em HTML/CSS/JavaScript, API Node.js + Express e PostgreSQL/Supabase acessado pelo Prisma. A autenticação é própria da API, com JWT em cookie HttpOnly e proteção CSRF; não usa Supabase Auth.
 
-**Entrega final:** [Documento de Especificação em PDF](docs/entrega-final/Documento_Especificacao_Vital_Experience_6P_Final_2026-11-08.pdf) · [Cópia editável em Word](docs/entrega-final/Documento_Especificacao_Vital_Experience_6P_Final_2026-11-08.docx)
+## Executar localmente
 
----
+Ambiente verificado: Node.js 24, npm 11 e Prisma 5.22. É necessário um banco PostgreSQL disponível e acesso à rede quando estiver hospedado no Supabase.
 
-## Equipe
+No PowerShell, dentro da pasta do projeto:
 
-| Nome | Função |
-|---|---|
-| Davi dos Santos Araújo | Product Owner |
-| Hugo Alves da Silva | Scrum Master |
-| Jorge Henrique Hajjar Farah Pereira | Desenvolvedor / Modelagem |
-| Luísa Maria Duarte Souza Bastos | QA / Documentação |
-
-**Orientadores:** Eder José Almeida da Silva (principal), Wosney Ramos de Souza (secundário)
-
----
-
-## Stack Tecnológica
-
-- **Frontend:** HTML5 + CSS3 + JavaScript puro
-- **Backend:** Node.js + Express (API REST em rotas, controllers e services)
-- **Autenticação:** JWT em cookie HttpOnly para o navegador (com CSRF), Bearer para clientes de API e bcryptjs
-- **ORM:** Prisma 5.x (fonte oficial do modelo e do acesso aos dados)
-- **Banco de Dados:** PostgreSQL 18 validado localmente; Supabase hospedado previsto, ainda sem ensaio
-
-## Identidade Visual
-
-| Token | Cor |
-|---|---|
-| Preto | `#0D0D0D` |
-| Cinza claro | `#F0F0EC` |
-| Amarelo | `#F5E642` |
-| Verde | `#1DB954` |
-| Rosa | `#FF2D7A` |
-
-Fontes: **Syne** (títulos) · **DM Sans** (corpo) · **DM Mono** (dados)
-
----
-
-## Estrutura do Projeto
-
-```
-vital-experience-pi/
-├── frontend/
-│   ├── pages/          # Telas do sistema (dashboard, usuarios, etc.)
-│   ├── css/            # Estilos globais e específicos
-│   ├── js/             # Lógica de cada tela + cliente HTTP em api.js
-│   ├── assets/         # Imagens e ícones
-│   └── index.html      # Tela de login
-├── backend/
-│   ├── prisma/
-│   │   ├── schema.prisma   # Fonte principal do banco (modelos e enums)
-│   │   ├── migrations/     # Evolução versionada do esquema
-│   │   └── seed.js         # Dados fictícios (limpa banco de desenvolvimento se autorizado)
-│   ├── src/
-│   │   ├── config/
-│   │   │   └── prisma.js   # Instância única do PrismaClient
-│   │   ├── controllers/    # Adaptação de requisições e respostas HTTP
-│   │   ├── services/       # Regras de negócio e persistência com Prisma
-│   │   ├── routes/         # Endpoints da API REST
-│   │   ├── middlewares/    # Autenticação e tratamento central de erros
-│   │   ├── errors/         # Erros de domínio convertidos em respostas HTTP
-│   │   └── utils/          # Validação e funções compartilhadas
-│   ├── tests/              # Testes automatizados do backend
-│   ├── server.js
-│   ├── package.json
-│   └── .env.example
-├── database/
-│   ├── schema.sql      # Referência SQL, não substitui as migrations
-│   └── seed.sql        # Referência histórica; não executar em banco com dados reais
-└── docs/
-    ├── api.md
-    ├── openapi.yaml
-    ├── diagramas.md
-    ├── responsabilidades-equipe.md
-    ├── seguranca-privacidade.md
-    └── apresentacao.md
-```
-
----
-
-## Como executar a aplicação integrada
-
-1. Instale Node.js e tenha um PostgreSQL de desenvolvimento disponível (local ou Supabase de teste).
-2. Em `backend/`, execute `npm install` e copie `.env.example` para `.env`.
-3. Configure `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET` (mínimo de 32 caracteres) e uma senha de administrador de teste com no mínimo 12 caracteres.
-4. Execute `npm run prisma:generate` e `npx prisma migrate deploy` em um banco de teste. As migrations são a fonte oficial da estrutura.
-5. Para criar os dados de demonstração, somente em um banco descartável, defina `SEED_RESET_CONFIRM=APAGAR_DADOS_DE_DEMONSTRACAO` e execute `npm run prisma:seed`. **Esse comando exclui todos os registros das tabelas do projeto antes de recriá-los.** Não o execute em banco com dados a preservar. Como alternativa, crie um administrador no banco por um procedimento controlado.
-6. Execute `npm run dev` e abra `http://localhost:3001/app/`. Não abra `frontend/index.html` via `file://`: a aplicação depende da API e do cookie de sessão na mesma origem.
-
-A API está em `http://localhost:3001/api`; o endpoint de saúde é `/health`. Nenhuma credencial real deve ser publicada no repositório. Caso frontend e backend sejam servidos de origens diferentes, configure `FRONTEND_ORIGIN` com a origem exata do frontend e `window.VE_API_BASE_URL` com a URL pública da API. Cookie entre origens distintas exige configuração de HTTPS e política de cookies apropriada; o caminho recomendado para demonstração é a mesma origem em `/app/`.
-
-Validações disponíveis:
-
-```bash
-npm run check
-npm test
-npx prisma validate
-```
-
----
-
-## Configuração do Prisma com Supabase
-
-### 1. Configure o `.env`
-
-No arquivo `backend/.env`, preencha com as URLs do seu projeto Supabase:
-
-```env
-DATABASE_URL="postgresql://postgres.PROJECT_REF:SENHA@aws-1-sa-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres.PROJECT_REF:SENHA@aws-1-sa-east-1.pooler.supabase.com:5432/postgres"
-```
-
-Obtenha as URLs em: **Supabase Dashboard → Settings → Database → Connection string → URI**
-
-### 2. Gerar o Prisma Client
-
-```bash
+```powershell
 cd backend
-npx prisma generate
-# ou
-npm run prisma:generate
+npm.cmd ci
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
+notepad .env
 ```
 
-### 3. Aplicar as migrations no banco de teste
+Configure `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET` (chave aleatória de pelo menos 32 caracteres), `ADMIN_EMAIL` e `ADMIN_PASSWORD` (senha própria de pelo menos 12 caracteres). Para gerar a chave JWT:
 
-```bash
-npx prisma migrate deploy
+```powershell
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-### 4. Popular um banco descartável com dados fictícios (opcional)
+No Supabase, obtenha as conexões em **Connect**: Transaction pooler (porta 6543, com `?pgbouncer=true`) para `DATABASE_URL` e Session pooler (porta 5432) para `DIRECT_URL`. Use as URLs e a senha do seu próprio projeto. Mantenha `FRONTEND_ORIGIN=` vazio para o frontend servido pela API.
 
-```bash
-# Configure antes ADMIN_PASSWORD (12+ caracteres) e
-# SEED_RESET_CONFIRM=APAGAR_DADOS_DE_DEMONSTRACAO no .env.
-npm run prisma:seed
+```powershell
+npm.cmd run prisma:generate
+npx.cmd prisma migrate deploy
+npm.cmd run account:admin
+npm.cmd run dev
 ```
 
-### 5. Abrir o Prisma Studio (visualizador visual do banco)
+Abra **http://localhost:3001/app/** e selecione **Administrador**. O login utiliza as credenciais definidas no `.env`. O comando `account:admin` preserva contas existentes e não redefine senhas. As migrations alteram a estrutura do banco: confira o destino e mantenha backup quando houver dados relevantes.
 
-```bash
-npx prisma studio
-# ou
-npm run prisma:studio
+Para iniciar novamente, execute `npm.cmd run dev` em `backend/`. Use `Ctrl+C` para parar. O frontend depende da API; abrir o HTML diretamente não estabelece a sessão.
+
+## Contas para demonstração
+
+Cadastre primeiro o profissional e o paciente pelo acesso de administrador, vinculando o paciente ao profissional. Consulte os IDs apresentados no sistema e execute em `backend/`:
+
+```powershell
+npm.cmd run account:professional -- ID_DO_PROFISSIONAL
+npm.cmd run account:patient -- ID_DO_PACIENTE
 ```
 
-> **Importante:** `database/schema.sql` é referência legível. Prisma e migrations são a fonte oficial. `prisma migrate deploy` altera o esquema: use somente após revisar o destino e manter backup, se houver dados relevantes.
+Substitua os identificadores pelos números reais. Para paciente sem e-mail cadastrado, informe um e-mail de login como segundo argumento: `npm.cmd run account:patient -- 8 paciente@example.com`.
 
-## Implementação integrada da Fase 02 do 6º período
+Cada comando cria uma conta vinculada a um cadastro ativo e gera uma senha aleatória. As credenciais ficam somente nos arquivos locais `.env.professional-<id>` e `.env.patient-<id>`, ignorados pelo Git. Contas já existentes não são sobrescritas. Não é enviado e-mail ou mensagem ao titular. O e-mail de login do paciente fica em `patient_accounts`, separado do contato cadastral.
 
-- autenticação de administradores persistidos com hash bcrypt; JWT em cookie HttpOnly com CSRF para o navegador ou Bearer para cliente de API;
-- consulta e edição de perfil, alteração de senha e revogação dos tokens anteriores por `tokenVersion`;
-- rotas protegidas para usuários, profissionais, sensores, sessões, leituras e relatórios;
-- controllers enxutos e services responsáveis pelas regras de negócio;
-- validação de campos obrigatórios, intervalos fisiológicos, datas e enums;
-- verificação de vínculos entre usuário, profissional, sessão e sensor;
-- bloqueio de leitura em sessão cancelada e de sensor incompatível com o usuário da sessão;
-- persistência por Prisma Client em PostgreSQL/Supabase;
-- respostas 400, 401, 404 e 409 para falhas conhecidas e tratamento centralizado de erros;
-- frontend consumindo `/api` para login, cadastros, sessões, leituras e relatórios, sem `localStorage` como fonte de dados;
-- testes locais de disponibilidade e contrato HTTP/cliente com persistência simulada em memória, além de verificação de sintaxe e validação do esquema Prisma.
+Na tela de login, escolha **Administrador**, **Profissional** ou **Paciente**. A mesma página atende aos três perfis. As senhas não estão neste repositório; utilize os arquivos de credenciais do seu ambiente.
 
-**Limite da evidência:** ainda não foi fornecido um banco Supabase de teste. As migrations não foram aplicadas neste ambiente e a persistência real em PostgreSQL não foi comprovada. Alertas automáticos, aquisição por sensor físico, autorização por profissional/paciente e testes de interface em navegador real permanecem pendentes.
+## Permissões
 
----
+| Ação | Administrador | Profissional | Paciente |
+|---|---|---|---|
+| Consultar pacientes e sensores | Todos | Pacientes vinculados e seus sensores | Somente os próprios dados e sensores |
+| Consultar profissionais | Todos | Próprio cadastro | Responsável atual |
+| Criar/editar cadastros gerais | Sim | Não | Não |
+| Consultar sessões e leituras | Todas | Sessões próprias de pacientes vinculados | Próprias sessões e leituras |
+| Criar/editar sessões e registrar leituras | Sim | Dentro do próprio escopo | Não |
+| Consultar relatórios e totais | Globais | Escopo autorizado | Próprios dados |
+| Excluir registros | Sim | Não | Não |
+| Trocar a própria senha | Sim | Sim | Sim |
 
-## Telas do Sistema
+As permissões são verificadas pela API, inclusive em acessos diretos por ID. Cadastros inativos perdem acesso; trocar a senha invalida sessões anteriores. Profissionais e pacientes solicitam correções cadastrais ao administrador.
 
-1. **Login** — autenticação real da API
-2. **Dashboard** — indicadores gerais, alertas, sessões recentes
-3. **Usuários Monitorados** — CRUD completo
-4. **Profissionais** — CRUD completo
-5. **Sensores** — CRUD + associação a usuários
-6. **Sessões de Monitoramento** — registro de sessões
-7. **Dados dos Sensores** — histórico por sessão e registro persistido de leitura sintética de demonstração
-8. **Relatórios** — evolução por usuário
-9. **Perfil & Segurança** — dados do administrador e troca de senha
+## Roteiro de apresentação
 
----
+1. Entre como administrador para mostrar os cadastros gerais e os vínculos.
+2. Saia e entre como profissional para mostrar seus pacientes, criar uma sessão e registrar uma leitura de demonstração.
+3. Saia e entre como paciente para consultar apenas seu acompanhamento e seu perfil.
+4. Abra os relatórios e confira os registros persistidos no banco.
 
-## Repositório
+Use dados fictícios. As leituras de demonstração são sintéticas; não representam integração validada com sensores físicos. Alertas automáticos, recuperação de senha, limitação de tentativas de login e auditoria independente permanecem pendentes.
 
-GitHub: [https://github.com/Davii015/vital-experience-pi](https://github.com/Davii015/vital-experience-pi)
+## Verificação
 
+```powershell
+npm.cmd run check
+npm.cmd test
+npx.cmd prisma validate
+```
+
+Os testes HTTP automatizados usam persistência simulada em memória e cobrem autenticação, CSRF, isolamento por perfil, bloqueio de alterações e revogação de sessões. Login e consultas dos perfis de demonstração também devem ser conferidos no banco escolhido.
+
+## Estrutura publicada
+
+- `frontend/`: telas, estilos e cliente HTTP.
+- `backend/`: API, schema, migrations, scripts de criação de contas e testes.
+- `docs/api.md`, `docs/openapi.yaml`, `docs/seguranca-privacidade.md`: referência técnica.
+
+Apresentações, slides, documentos acadêmicos, SQL legado, credenciais, logs e dependências instaladas não fazem parte desta versão publicada. As migrations do Prisma são a fonte oficial da estrutura do banco.
+
+O seed (`npm run prisma:seed`) é opcional e **apaga registros das tabelas do projeto** antes de recriar dados fictícios; use apenas em banco descartável, após definir `SEED_RESET_CONFIRM=APAGAR_DADOS_DE_DEMONSTRACAO`. Ele não é necessário para executar a aplicação nem para criar as contas acima.

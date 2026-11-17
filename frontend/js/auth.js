@@ -16,7 +16,7 @@ async function handleLogin(e) {
   btn.disabled = true;
 
   try {
-    await API.auth.login(email, password);
+    await API.auth.login(email, password, document.getElementById('accessRole').value);
     window.location.href = '/app/pages/dashboard.html';
   } catch (error) {
     errEl.textContent = error.message;

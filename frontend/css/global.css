@@ -922,3 +922,11 @@ hr { border: none; border-top: 1px solid var(--gray-200); margin: 20px 0; }
   .toolbar { flex-direction: column; align-items: stretch; }
   .search-wrap { max-width: 100%; }
 }
+
+/* Visibility follows API permissions; authorization is enforced on the server. */
+body:not(.role-admin) [data-admin-only],
+body:not(.role-professional) [data-professional-only] { display: none !important; }
+body:not(.role-patient) [data-patient-only],
+body:not(.role-care-team) [data-care-team-only] { display: none !important; }
+.profile-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+@media (max-width: 900px) { .profile-grid { grid-template-columns: minmax(0, 1fr); } }

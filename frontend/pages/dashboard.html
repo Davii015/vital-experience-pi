@@ -49,9 +49,9 @@
     <nav class="sidebar-nav">
       <span class="nav-section-label">Principal</span>
       <a href="dashboard.html"     class="nav-item active"><span class="nav-icon">▣</span> Dashboard</a>
-      <span class="nav-section-label">Cadastros</span>
-      <a href="usuarios.html"      class="nav-item"><span class="nav-icon">◎</span> Usuários</a>
-      <a href="profissionais.html" class="nav-item"><span class="nav-icon">◈</span> Profissionais</a>
+      <span data-care-team-only class="nav-section-label">Cadastros</span>
+      <a data-care-team-only href="usuarios.html"      class="nav-item"><span class="nav-icon">◎</span> Usuários</a>
+      <a data-admin-only href="profissionais.html" class="nav-item"><span class="nav-icon">◈</span> Profissionais</a>
       <span class="nav-section-label">Monitoramento</span>
       <a href="sensores.html"      class="nav-item"><span class="nav-icon">◉</span> Sensores</a>
       <a href="sessoes.html"       class="nav-item"><span class="nav-icon">▶</span> Sessões</a>
@@ -93,11 +93,11 @@
       <!-- PAGE HEADER -->
       <div class="page-header">
         <div class="page-header-text">
-          <h2>Visão Geral</h2>
+          <h2 data-patient-text="Meu acompanhamento">Visão Geral</h2>
           <p id="dashGreeting">Bem-vindo ao sistema de monitoramento</p>
         </div>
         <div class="page-header-actions">
-          <a href="sessoes.html" class="btn btn-primary">+ Nova Sessão</a>
+          <a data-care-team-only href="sessoes.html" class="btn btn-primary">+ Nova Sessão</a>
         </div>
       </div>
 
@@ -105,13 +105,13 @@
       <div class="stats-grid">
         <div class="stat-card c-yellow">
           <span class="stat-icon">👥</span>
-          <span class="stat-label">Usuários Monitorados</span>
+          <span class="stat-label" data-patient-text="Meu cadastro">Usuários Monitorados</span>
           <span class="stat-value" id="statUsers">—</span>
           <span class="stat-change">cadastrados no sistema</span>
         </div>
         <div class="stat-card c-green">
           <span class="stat-icon">🩺</span>
-          <span class="stat-label">Profissionais</span>
+          <span class="stat-label" data-patient-text="Profissional responsável">Profissionais no seu acesso</span>
           <span class="stat-value" id="statProfs">—</span>
           <span class="stat-change">fisioterapeutas e educadores</span>
         </div>
@@ -131,8 +131,8 @@
 
       <!-- QUICK NAV -->
       <div class="quick-nav">
-        <a href="usuarios.html"       class="qnav-card"><span class="qnav-icon">👤</span><span class="qnav-label">Usuários</span></a>
-        <a href="profissionais.html"  class="qnav-card"><span class="qnav-icon">🩺</span><span class="qnav-label">Profissionais</span></a>
+        <a data-care-team-only href="usuarios.html"       class="qnav-card"><span class="qnav-icon">👤</span><span class="qnav-label">Usuários</span></a>
+        <a data-admin-only href="profissionais.html"  class="qnav-card"><span class="qnav-icon">🩺</span><span class="qnav-label">Profissionais</span></a>
         <a href="sensores.html"       class="qnav-card"><span class="qnav-icon">📡</span><span class="qnav-label">Sensores</span></a>
         <a href="sessoes.html"        class="qnav-card"><span class="qnav-icon">⏱</span><span class="qnav-label">Sessões</span></a>
         <a href="dados-sensores.html" class="qnav-card"><span class="qnav-icon">📊</span><span class="qnav-label">Dados</span></a>

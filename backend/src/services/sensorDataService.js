@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const ApiError = require('../errors/ApiError');
+const { readingScope, sessionScope, isProfessional } = require('../utils/access');
 const { positiveInt, numberInRange, integerInRange, optionalString, enumValue, dateValue, requestValue } = require('../utils/validation');
 
 function dataFrom(body) {
@@ -17,20 +18,20 @@ function dataFrom(body) {
   };
 }
 
-async function list() {
-  return prisma.sensorData.findMany({ orderBy: { recordedAt: 'desc' }, include: { sensor: true, session: true } });
+async function list(actor) {
+  return prisma.sensorData.findMany({ where: readingScope(actor), orderBy: { recordedAt: 'desc' }, include: { sensor: true, session: true } });
 }
 
-async function bySession(sessionId) {
-  const session = await prisma.session.findUnique({ where: { id: sessionId } });
+async function bySession(sessionId, actor) {
+  const session = await prisma.session.findUnique({ where: { id: sessionId, ...sessionScope(actor) } });
   if (!session) throw new ApiError(404, 'Sessão não encontrada');
-  return prisma.sensorData.findMany({ where: { sessionId }, orderBy: { recordedAt: 'asc' }, include: { sensor: true } });
+  return prisma.sensorData.findMany({ where: { sessionId, ...readingScope(actor) }, orderBy: { recordedAt: 'asc' }, include: { sensor: true } });
 }
 
-async function create(body) {
+async function create(body, actor) {
   const data = dataFrom(body);
-  const session = await prisma.session.findUnique({ where: { id: data.sessionId } });
-  if (!session) throw new ApiError(400, 'Sessão não encontrada');
+  const session = await prisma.session.findUnique({ where: { id: data.sessionId, ...sessionScope(actor) } });
+  if (!session) throw new ApiError(isProfessional(actor) ? 404 : 400, 'Sessão não encontrada');
   if (session.status === 'CANCELADA') throw new ApiError(409, 'Não é permitido registrar leitura em sessão cancelada');
 
   if (data.sensorId) {

@@ -3,9 +3,12 @@ info:
   title: Vital Experience API
   version: 2.1.0
   description: >-
-    Contrato HTTP da Fase 02. A API oferece autenticação de administrador,
+    Contrato HTTP da Fase 02. A API oferece autenticação de administrador, profissional e paciente,
     cadastros, sessões, leituras e consultas agregadas. A persistência em
     PostgreSQL depende da configuração externa do ambiente.
+    Profissionais consultam apenas pacientes vinculados e sessões/relatórios próprios desses pacientes,
+    criam e atualizam suas sessões e registram leituras autorizadas. Cadastros gerais e todas as
+    exclusões exigem ADMIN. Pacientes consultam somente os próprios dados e podem trocar a própria senha. Registros fora do escopo retornam 404 e ações proibidas retornam 403.
 servers:
   - url: http://localhost:3001/api
 security:
@@ -14,7 +17,7 @@ security:
 paths:
   /auth/login:
     post:
-      summary: Autentica um administrador
+      summary: Autentica um administrador, profissional ou paciente
       security: []
       requestBody:
         required: true
@@ -26,6 +29,7 @@ paths:
               properties:
                 email: { type: string, format: email }
                 password: { type: string }
+                role: { type: string, enum: [ADMIN, PROFESSIONAL, PATIENT], default: ADMIN }
                 mode: { type: string, enum: [bearer], description: Omitir para sessão por cookie }
       responses:
         '200': { description: Cookie ve_session e user/csrfToken, ou token/user no modo bearer }
@@ -33,7 +37,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
   /auth/me:
     get:
-      summary: Obtém o administrador autenticado e o CSRF quando há cookie
+      summary: Obtém a identidade autenticada e o CSRF quando há cookie
       responses:
         '200': { description: user e csrfToken (null em modo bearer) }
         '401': { $ref: '#/components/responses/Unauthorized' }

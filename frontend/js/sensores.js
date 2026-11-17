@@ -34,7 +34,7 @@ function renderTable() {
   updateStats();
 
   if (!sensors.length) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="empty-icon">📡</span><h3>${document.getElementById('searchInput').value ? 'Nenhum resultado' : 'Nenhum sensor cadastrado'}</h3><p>Clique em "+ Novo Sensor" para começar.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="empty-icon">📡</span><h3>${document.getElementById('searchInput').value ? 'Nenhum resultado' : 'Nenhum sensor cadastrado'}</h3><p>${API.auth.isAdmin() ? 'Clique em "+ Novo Sensor" para começar.' : 'Nenhum sensor vinculado aos seus pacientes.'}</p></div></td></tr>`;
     return;
   }
 
@@ -50,8 +50,8 @@ function renderTable() {
         <td style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400)">${escapeHtml(s.serial||'—')}</td>
         <td>${u ? `<div class="td-primary" style="font-size:12.5px">${escapeHtml(u.name)}</div>` : '<span class="badge badge-gray">Não associado</span>'}</td>
         <td><span class="badge" style="background:${color}22;color:${color}">${escapeHtml(s.status||'—')}</span></td>
-        <td>
-          <div class="td-actions">
+        <td data-admin-only>
+          <div class="td-actions" data-admin-only>
             <button class="btn btn-sm btn-ghost btn-icon" title="Editar" onclick="openModal(${s.id})">✎</button>
             <button class="btn btn-sm btn-danger btn-icon" title="Remover" onclick="openDelete(${s.id})">✕</button>
           </div>

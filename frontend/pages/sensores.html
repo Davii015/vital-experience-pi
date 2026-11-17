@@ -13,9 +13,9 @@
     <nav class="sidebar-nav">
       <span class="nav-section-label">Principal</span>
       <a href="dashboard.html" class="nav-item"><span class="nav-icon">▣</span> Dashboard</a>
-      <span class="nav-section-label">Cadastros</span>
-      <a href="usuarios.html" class="nav-item"><span class="nav-icon">◎</span> Usuários</a>
-      <a href="profissionais.html" class="nav-item"><span class="nav-icon">◈</span> Profissionais</a>
+      <span data-care-team-only class="nav-section-label">Cadastros</span>
+      <a data-care-team-only href="usuarios.html" class="nav-item"><span class="nav-icon">◎</span> Usuários</a>
+      <a data-admin-only href="profissionais.html" class="nav-item"><span class="nav-icon">◈</span> Profissionais</a>
       <span class="nav-section-label">Monitoramento</span>
       <a href="sensores.html" class="nav-item active"><span class="nav-icon">◉</span> Sensores</a>
       <a href="sessoes.html" class="nav-item"><span class="nav-icon">▶</span> Sessões</a>
@@ -45,7 +45,7 @@
     <div class="content-area">
       <div class="page-header">
         <div class="page-header-text"><h2>Sensores</h2><p>Dispositivos vestíveis cadastrados e suas associações</p></div>
-        <div class="page-header-actions"><button class="btn btn-primary" onclick="openModal()">+ Novo Sensor</button></div>
+        <div class="page-header-actions"><button class="btn btn-primary" data-admin-only onclick="openModal()">+ Novo Sensor</button></div>
       </div>
 
       <!-- Stat mini cards -->
@@ -67,7 +67,7 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Tipo</th><th>Modelo</th><th>Serial</th><th>Usuário Associado</th><th>Status</th><th>Ações</th></tr></thead>
+            <thead><tr><th>Tipo</th><th>Modelo</th><th>Serial</th><th>Usuário Associado</th><th>Status</th><th data-admin-only>Ações</th></tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
